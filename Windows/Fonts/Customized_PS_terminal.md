@@ -46,7 +46,17 @@ Code:
 https://github.com/SleepyCatHey/Ultimate-Win11-Setup/blob/main/PowerShell/Microsoft.PowerShell_profile.ps1
 ```
 
-15. 
+# Issues
+## 1. "Execution of scripts is disabled on this system"
+If you see "execution of scripts is disabled on this system", don’t panic! Just open PowerShell as Administrator and run:
+```
+Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
+```
+
+
+
+
+
 
 Credit: 
 ```
