@@ -215,8 +215,8 @@ If $HOME is wrong, PowerShell cannot build $PROFILE
 HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders
 ```
 - Find the value *Personal*
-- If it’s empty, missing, or pointing to OneDrive incorrectly,
-
+- If it’s empty, missing, or pointing to OneDrive incorrectly <br>
+<img width="1021" height="716" alt="Image" src="https://github.com/user-attachments/assets/aed347c8-40f9-478a-9c45-01b9d03644d1" /> <br>
 
 
 
