@@ -216,14 +216,33 @@ HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell 
 ```
 - Find the value *Personal*
 - If it’s empty, missing, or pointing to OneDrive incorrectly <br>
-<img width="1021" height="716" alt="Image" src="https://github.com/user-attachments/assets/aed347c8-40f9-478a-9c45-01b9d03644d1" /> <br>
-
-
-
+<img width="821" height="516" alt="Image" src="https://github.com/user-attachments/assets/aed347c8-40f9-478a-9c45-01b9d03644d1" /> <br>
 - Edit it from ``C:\Users\username\OneDrives\Documents`` to ``C:\Users\username\Documents``:
+- Restart your PC
+- Run the following:
+```
+[Environment]::GetFolderPath("MyDocuments")
+```
+Should return ``C:\Users\username\Documents``
 
+---
+Run this next:
+```
+$PROFILE | Format-List * -Force
+```
+If this is the output or similar that the CurrentUserAllHosts and CurrentUserCurrentHost are NO LONGER null or empty, you made it!    	
+```
+AllUsersAllHosts       : C:\Program Files\PowerShell\7\profile.ps1
+AllUsersCurrentHost    : C:\Program Files\PowerShell\7\Microsoft.PowerShell_profile.ps1
+CurrentUserAllHosts    : C:\Users\username\Documents\PowerShell\profile.ps1
+CurrentUserCurrentHost : C:\Users\username\Documents\PowerShell\Microsoft.PowerShell_profile.ps1
+Length                 : 69
+```
 
+- Finally, open a new Windows PowerShell tab and you should expect to see this:
+<img width="739" height="332" alt="Image" src="https://github.com/user-attachments/assets/2f710356-e440-4d7c-8148-5db96a054875" />
 
+CONGRADULATION!!!
 
 ====================================================================
 # 3. Credit: 
