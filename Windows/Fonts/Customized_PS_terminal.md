@@ -13,7 +13,7 @@ When you first open the PS terminal, you can see the boring pitch black backgrou
 
 Before:\
 <img width="727" height="339" alt="Image" src="https://github.com/user-attachments/assets/7707aedc-5ae7-4ccd-94e4-97a99a3fd9d9" />
-After:<br>
+<br>After:<br>
 <img width="739" height="332" alt="Image" src="https://github.com/user-attachments/assets/2f710356-e440-4d7c-8148-5db96a054875" />
 
 So let's change that:
