@@ -27,15 +27,21 @@ New-Item -Path $profile.CurrentUserAllHosts -Type File -Force
 8. Go to https://github.com/fastfetch-cli/fastfetch
 Scroll down until you find Windows/winget
 
-9. Go to terminal and paste: winget install fastfetch 
-10. Go to your file explorer -> Users -> {Your hostname} -> Create a folder called .config -> make it a hidden file -> enter the folder and create another folder called fastfetch
-11. Go back to the link and download both files: https://github.com/SleepyCatHey/Ultimate-Win11-Setup/tree/main/Fastfetch
+9. Go to terminal and paste:
+```
+winget install fastfetch
+```
+11. Go to your file explorer -> Users -> {Your hostname} -> Create a folder called .config -> make it a hidden file -> enter the folder and create another folder called fastfetch
+12. Go back to the link and download both files
+```
+https://github.com/SleepyCatHey/Ultimate-Win11-Setup/tree/main/Fastfetch
+```
 Paste both files into the fastfetch folder
 
-12. Go to C:\Users\{Your hostname}\OneDrive\Documents\WindowsPowerShell\profile.ps1
-13. Go to this link and copy the code and paste it in profile.ps1 and don't forget to replace %USERPROFILE% with your hostname
-Code: https://github.com/SleepyCatHey/Ultimate-Win11-Setup/blob/main/PowerShell/Microsoft.PowerShell_profile.ps1
+14. Go to `C:\Users\{Your hostname}\OneDrive\Documents\WindowsPowerShell\profile.ps1`
+16. Go to this link and copy the code and paste it in profile.ps1 and don't forget to replace %USERPROFILE% with your hostname
+Code: `https://github.com/SleepyCatHey/Ultimate-Win11-Setup/blob/main/PowerShell/Microsoft.PowerShell_profile.ps1`
 
-14. 
+17. 
 
-Credit: https://www.youtube.com/watch?v=z3NpVq-y6jU
+Credit: `https://www.youtube.com/watch?v=z3NpVq-y6jU`
