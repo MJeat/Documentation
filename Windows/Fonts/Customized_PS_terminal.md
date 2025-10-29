@@ -220,8 +220,8 @@ HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell 
 
 
 
-- Edit it to:
-``C:\Users\username\Documents``
+- Edit it from ``C:\Users\username\OneDrives\Documents`` to ``C:\Users\username\Documents``:
+
 
 
 
