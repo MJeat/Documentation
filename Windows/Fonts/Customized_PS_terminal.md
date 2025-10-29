@@ -242,7 +242,7 @@ Length                 : 69
 - Finally, open a new Windows PowerShell tab and you should expect to see this:
 <img width="739" height="332" alt="Image" src="https://github.com/user-attachments/assets/2f710356-e440-4d7c-8148-5db96a054875" />
 
-CONGRADULATION!!!
+CONGRATULATION!!!
 
 ====================================================================
 # 3. Credit: 
