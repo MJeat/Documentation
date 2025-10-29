@@ -1,6 +1,7 @@
 # How to customize a boring Windows powershell terminal into something more appealing
 Note:
 You must not work in OneDrive folder. Check your file explorer. You need to work with the local desktop directory.
+
 ====================================================================
 
 When you first open the PS terminal, you can see the boring pitch black background, so let's change that:
@@ -18,7 +19,8 @@ The code file is in another file called fontCodes
 ```
 $PROFILE
 ```
-### Follow the path and find in Windows Explorer. 
+Follow the path and find in Windows Explorer
+
 ====================================================================
 
 If you don't see anything inside, type this code in the PS terminal: 
