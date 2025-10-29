@@ -10,7 +10,7 @@
 # 1. Guidance:
 
 When you first open the PS terminal, you can see the boring pitch black background
-<img width="939" height="532" alt="Image" src="https://github.com/user-attachments/assets/2f710356-e440-4d7c-8148-5db96a054875" />
+<img width="739" height="332" alt="Image" src="https://github.com/user-attachments/assets/2f710356-e440-4d7c-8148-5db96a054875" />
 
 So let's change that:
 1. Download JetBrains Font (https://www.jetbrains.com/lp/mono/) or any font you desire
