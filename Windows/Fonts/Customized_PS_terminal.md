@@ -14,7 +14,9 @@ Follow the path and find in Windows Explorer.
 ====================================================================
 
 If you don't see anything inside, type this code in the PS terminal: 
+```
 New-Item -Path $profile.CurrentUserAllHosts -Type File -Force
+```
 
 ====================================================================
 
