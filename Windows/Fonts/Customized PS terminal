@@ -4,7 +4,10 @@ When you first open the PS terminal, you can see the boring pitch black backgrou
 1. Download JetBrains Font (https://www.jetbrains.com/lp/mono/) or any font you desire
 2. Open your windows PS terminal
 3. At the top, click the drop-down button -> Settings -> JSON setting on the bottom left
-4. Copy paste the code from SleepyCatHey. The code file is in another file
+4. Copy paste the code from SleepyCatHey. The code file is in another file called fontCodes
+5. Change the "face" and replace its value your favorite font name -> Ctrl + S
+6. Open the new PS terminal and you will see the difference
+
 
 
 
