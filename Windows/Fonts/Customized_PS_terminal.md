@@ -1,4 +1,8 @@
 # How to customize a boring Windows powershell terminal into something more appealing
+Note:
+You must not work in OneDrive folder. Check your file explorer. You need to work with the local desktop directory.
+====================================================================
+
 When you first open the PS terminal, you can see the boring pitch black background, so let's change that:
 
 1. Download JetBrains Font (https://www.jetbrains.com/lp/mono/) or any font you desire
@@ -37,10 +41,10 @@ winget install fastfetch
 https://github.com/SleepyCatHey/Ultimate-Win11-Setup/tree/main/Fastfetch
 ```
 - Paste both files into the fastfetch folder. 
-- Go to the config.jsonc and replace %USERPROFILE% with your hostname
+- Go to the config.jsonc and replace %USERPROFILE% with your computer username
 
-13. Go to `C:\Users\{Your hostname}\Documents\WindowsPowerShell\profile.ps1`
-14. Go to this link and copy the code and paste it in profile.ps1 and don't forget to replace %USERPROFILE% with your hostname. 
+13. Go to `C:\Users\{Your hostname}\Documents\WindowsPowerShell\` in File Explorer
+14. Go to this link and copy the code and paste it in profile.ps1 and don't forget to replace %USERPROFILE% with your computer username. 
 Code:
 ```
 https://github.com/SleepyCatHey/Ultimate-Win11-Setup/blob/main/PowerShell/Microsoft.PowerShell_profile.ps1
@@ -52,7 +56,9 @@ If you see "execution of scripts is disabled on this system", don’t panic! Jus
 ```
 Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
 ```
+Then, rerun the regular Windows PS.
 
+## 2. 
 
 
 
