@@ -3,7 +3,7 @@
 ### 🔗 Table of Contents
 1. [Guidance](#1-Guidance)
 2. [Issues](#2-Issues)
--  ["Execution of scripts is disabled on this system"](#1-Execution-of-scripts-is-disabled-on-this-system)
+-  [Execution of scripts is disabled on this system](#1-Execution-of-scripts-is-disabled-on-this-system)
 3. [Credit](#3-Credit)
 
 
