@@ -9,7 +9,11 @@ The code file is in another file called fontCodes
 
 5. Change the "face" and replace its value your favorite font name -> Ctrl + S
 6. Open the new PS terminal and you will see the difference
-7. On the terminal, you need to find the PS profile by typing: $PROFILE
+7. On the terminal, you need to find the PS profile by typing:
+
+```
+$PROFILE
+```
 Follow the path and find in Windows Explorer. 
 ====================================================================
 
