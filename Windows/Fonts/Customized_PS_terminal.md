@@ -1,8 +1,13 @@
 # How to customize a boring Windows powershell terminal into something more appealing
+
+### 🔗 Table of Contents
+1. [Guidance](#1-Guidance)
+
+
 ====================================================================
+# 1. Guidance:
 
 When you first open the PS terminal, you can see the boring pitch black background, so let's change that:
-
 1. Download JetBrains Font (https://www.jetbrains.com/lp/mono/) or any font you desire
 2. Open your windows PS terminal
 3. At the top, click the drop-down button -> Settings -> JSON setting on the bottom left
