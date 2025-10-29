@@ -14,7 +14,7 @@ The code file is in another file called fontCodes
 ```
 $PROFILE
 ```
-Follow the path and find in Windows Explorer. 
+### Follow the path and find in Windows Explorer. 
 ====================================================================
 
 If you don't see anything inside, type this code in the PS terminal: 
