@@ -1,7 +1,4 @@
 # How to customize a boring Windows powershell terminal into something more appealing
-Note:
-You must not work in OneDrive folder. Check your file explorer. You need to work with the local desktop directory.
-
 ====================================================================
 
 When you first open the PS terminal, you can see the boring pitch black background, so let's change that:
@@ -19,7 +16,13 @@ The code file is in another file called fontCodes
 ```
 $PROFILE
 ```
-Follow the path and find in Windows Explorer
+Follow the path and find in Windows Explorer.
+Note:
+You must not work in OneDrive folder. Check your file explorer. You need to work with the local desktop directory. If you see something like 
+```
+C:\Users\alice\OneDrive\Documents\...
+```
+Then, you should jump to the Issues section number 2.
 
 ====================================================================
 
@@ -60,10 +63,68 @@ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser -Force
 ```
 Then, rerun the regular Windows PS.
 
-## 2. 
+## 2. Working with OneDrive
+Working with OneDrive is not ideal, so we need to change that. Our goal is to work with the local desktop. Here are the steps:
+1. Find OneDrive folder in File Explorer -> This PC -> Users -> User (or your computer username) -> OneDrive
+2. Create a new folder outside of OneDrive
+```
+New-Item -ItemType Directory -Force -Path "$HOME\Documents\WindowsPowerShell"
+```
+3. Move your current profile from OneDrive (if it exists)
+```
+# Check if the OneDrive profile exists
+$OneDriveProfile = "$HOME\OneDrive\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1"
 
+if (Test-Path $OneDriveProfile) {
+    Move-Item -Path $OneDriveProfile -Destination "$HOME\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1" -Force
+}
+```
+4. Ensures the new profile exists
+```
+New-Item -ItemType File -Force -Path "$HOME\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1"
+```
+5. Verify $profile
+```
+$PROFILE
+$PROFILE.CurrentUserAllHosts
+```
 
+### Another option
+1. Check the automatic object
+```
+$PROFILE | Get-Member
+```
 
+- If it says TypeName: System.String, then yes, it was overwritten.
+- If it’s the automatic object, it should have properties like .CurrentUserAllHosts.
+
+2. Restore the automatic $PROFILE object
+The easiest way is to close and reopen PowerShell. That will restore $PROFILE to its built-in object.
+
+3. Move your existing profile (if it exists)
+```
+$OldProfile = "$HOME\OneDrive\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1"
+$NewProfile = "C:\Users\kiric\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1"
+
+if (Test-Path $OldProfile) {
+    Move-Item -Path $OldProfile -Destination $NewProfile -Force
+}
+```
+
+4. Edit the current PowerShell session to use the new profile path (without overwriting the automatic object)
+```
+$MyProfile = $NewProfile
+```
+
+5. From now on, you can add scripts to $MyProfile, and PowerShell will load it if you manually dot-source it
+```
+. $MyProfile
+```
+
+💡 Optional: If you want PowerShell to automatically use this profile on startup instead of the OneDrive one, you’ll need to change your Documents folder location in Windows or redirect $PROFILE in your PowerShell shortcut using:
+```
+powershell.exe -NoProfile -Command ". 'C:\Users\kiric\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1'"
+```
 
 ====================================================================
 Credit: 
