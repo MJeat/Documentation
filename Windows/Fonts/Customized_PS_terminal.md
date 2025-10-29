@@ -2,6 +2,8 @@
 
 ### 🔗 Table of Contents
 1. [Guidance](#1-Guidance)
+2. [Issues](#2-Issues)
+3. [Credit](#3-Credit)
 
 
 ====================================================================
@@ -132,7 +134,7 @@ powershell.exe -NoProfile -Command ". 'C:\Users\kiric\Documents\WindowsPowerShel
 ```
 
 ====================================================================
-Credit: 
+# 3. Credit: 
 ```
 https://www.youtube.com/watch?v=z3NpVq-y6jU
 ```
