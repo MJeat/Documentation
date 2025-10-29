@@ -141,26 +141,88 @@ powershell.exe -NoProfile -Command ". 'C:\Users\kiric\Documents\WindowsPowerShel
 ```
 
 ## 3. $profile outputs nothing
-When you run `$profile` and it outputs nothing in Windows PS, follow along:
-1. Define $PROFILE to point to a file inside your desired folder
+When you run `$profile` and it outputs nothing in Windows PS. This can happens if the CurrentUserAllHosts and CurrentUserCurrentHost are null or empty.<br>
+Usually, when you run
 ```
-$PROFILE = "C:\Users\kiric\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1"
+$PROFILE | Select-Object *
 ```
-
-2. Make sure the folder exists
+It outputs
 ```
-New-Item -ItemType Directory -Force -Path "C:\Users\kiric\Documents\WindowsPowerShell"
-```
-
-3. Create the profile file if it doesn't exist
-```
-New-Item -Path $PROFILE -ItemType File -Force
+AllUsersAllHosts       : C:\Program Files\PowerShell\7\profile.ps1
+AllUsersCurrentHost    : C:\Program Files\PowerShell\7\Microsoft.PowerShell_profile.ps1
+CurrentUserAllHosts    : C:\Users\username\Documents\PowerShell\profile.ps1
+CurrentUserCurrentHost : C:\Users\username\Documents\PowerShell\Microsoft.PowerShell_profile.ps1
+Length                 : 69
 ```
 
-4. PowerShell can load it automatically if you dot-source it: 
+But in this issue, the CurrentUserAllHosts and CurrentUserCurrentHost are null or empty
+Outputs
 ```
-. $PROFILE
+AllUsersAllHosts       : C:\Program Files\PowerShell\7\profile.ps1
+AllUsersCurrentHost    : C:\Program Files\PowerShell\7\Microsoft.PowerShell_profile.ps1
+CurrentUserAllHosts    : 
+CurrentUserCurrentHost : 
+Length                 : 0
 ```
+
+### Diagnosis - $profile outputs nothing
+1. Check what PowerShell thinks your Documents folder is
+```
+[Environment]::GetFolderPath("MyDocuments")
+```
+If outputs: `C:\Users\username\Documents`, great!
+If outputs: Nothing or contains OneDrive, the PowerShell is pointing to nothing or OneDrive directory
+
+2. Check if WindowsPowerShell folder exists
+```
+Test-Path "$HOME\Documents\WindowsPowerShell"
+```
+If true, great!
+If not, create:
+```
+New-Item -ItemType Directory -Force -Path "$HOME\Documents\WindowsPowerShell"
+```
+
+3. Check if profile files exist
+```
+Test-Path "$HOME\Documents\WindowsPowerShell\profile.ps1"
+Test-Path "$HOME\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1"
+```
+If both returns True, great!
+If False, create:
+```
+New-Item -Type File -Force -Path "$HOME\Documents\WindowsPowerShell\profile.ps1"
+New-Item -Type File -Force -Path "$HOME\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1"
+```
+
+4. Check $HOME variable
+
+```
+$HOME
+```
+It must return
+```
+C:\Users\username
+```
+If $HOME is wrong, PowerShell cannot build $PROFILE
+
+5. Last but most effective option - Fix via the Registry
+
+- Win key + R
+- Type regedit
+- In the search bar at the top, type
+```
+HKEY_CURRENT_USER\Software\Microsoft\Windows\CurrentVersion\Explorer\User Shell Folders
+```
+- Find the value *Personal*
+- If it’s empty, missing, or pointing to OneDrive incorrectly,
+
+
+
+
+- Edit it to:
+``C:\Users\username\Documents``
+
 
 
 ====================================================================
