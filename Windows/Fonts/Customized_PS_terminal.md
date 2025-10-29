@@ -5,7 +5,7 @@
 2. [Issues](#2-Issues)
 -  [Execution of scripts is disabled on this system](#1-Execution-of-scripts-is-disabled-on-this-system)
 -  [Working with OneDrive](#2-Working-with-OneDrive)
--  [$profile outputs nothing](#3-$profile-outputs-nothing)_
+-  [$profile outputs nothing](#3-profile-outputs-nothing)_
 3. [Credit](#3-Credit)
 
 ====================================================================
