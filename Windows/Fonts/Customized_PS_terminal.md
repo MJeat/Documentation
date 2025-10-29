@@ -44,4 +44,7 @@ Code: `https://github.com/SleepyCatHey/Ultimate-Win11-Setup/blob/main/PowerShell
 
 17. 
 
-Credit: `https://www.youtube.com/watch?v=z3NpVq-y6jU`
+Credit: 
+```
+https://www.youtube.com/watch?v=z3NpVq-y6jU
+```
