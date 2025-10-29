@@ -9,7 +9,10 @@
 ====================================================================
 # 1. Guidance:
 
-When you first open the PS terminal, you can see the boring pitch black background, so let's change that:
+When you first open the PS terminal, you can see the boring pitch black background
+<img width="1039" height="632" alt="Image" src="https://github.com/user-attachments/assets/2f710356-e440-4d7c-8148-5db96a054875" />
+
+So let's change that:
 1. Download JetBrains Font (https://www.jetbrains.com/lp/mono/) or any font you desire
 2. Open your windows PS terminal
 3. At the top, click the drop-down button -> Settings -> JSON setting on the bottom left
