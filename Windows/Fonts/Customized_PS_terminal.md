@@ -39,11 +39,14 @@ https://github.com/SleepyCatHey/Ultimate-Win11-Setup/tree/main/Fastfetch
 - Paste both files into the fastfetch folder. 
 - Go to the config.jsonc and replace %USERPROFILE% with your hostname
 
-14. Go to `C:\Users\{Your hostname}\Documents\WindowsPowerShell\profile.ps1`
-16. Go to this link and copy the code and paste it in profile.ps1 and don't forget to replace %USERPROFILE% with your hostname. 
-Code: ```https://github.com/SleepyCatHey/Ultimate-Win11-Setup/blob/main/PowerShell/Microsoft.PowerShell_profile.ps1```
+13. Go to `C:\Users\{Your hostname}\Documents\WindowsPowerShell\profile.ps1`
+14. Go to this link and copy the code and paste it in profile.ps1 and don't forget to replace %USERPROFILE% with your hostname. 
+Code:
+```
+https://github.com/SleepyCatHey/Ultimate-Win11-Setup/blob/main/PowerShell/Microsoft.PowerShell_profile.ps1
+```
 
-18. 
+15. 
 
 Credit: 
 ```
