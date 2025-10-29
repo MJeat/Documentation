@@ -63,11 +63,9 @@ https://github.com/SleepyCatHey/Ultimate-Win11-Setup/tree/main/Fastfetch
 - Go to the config.jsonc and replace %USERPROFILE% with your computer username
 
 13. Go to `C:\Users\{Your hostname}\Documents\WindowsPowerShell\` in File Explorer
-14. Go to this link and copy the code and paste it in profile.ps1 and don't forget to replace %USERPROFILE% with your computer username. 
-Code:
-```
-https://github.com/SleepyCatHey/Ultimate-Win11-Setup/blob/main/PowerShell/Microsoft.PowerShell_profile.ps1
-```
+14. Go to this link and copy the code and paste it in profile.ps1 and don't forget to replace %USERPROFILE% with your computer username.\ 
+Code: https://github.com/SleepyCatHey/Ultimate-Win11-Setup/blob/main/PowerShell/Microsoft.PowerShell_profile.ps1
+
 
 # 2. Issues
 ## 1. "Execution of scripts is disabled on this system"
