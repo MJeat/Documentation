@@ -133,6 +133,29 @@ $MyProfile = $NewProfile
 powershell.exe -NoProfile -Command ". 'C:\Users\kiric\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1'"
 ```
 
+## 3. $profile outputs nothing
+When you run `$profile` and it outputs nothing in Windows PS, follow along:
+1. Define $PROFILE to point to a file inside your desired folder
+```
+$PROFILE = "C:\Users\kiric\Documents\WindowsPowerShell\Microsoft.PowerShell_profile.ps1"
+```
+
+2. Make sure the folder exists
+```
+New-Item -ItemType Directory -Force -Path "C:\Users\kiric\Documents\WindowsPowerShell"
+```
+
+3. Create the profile file if it doesn't exist
+```
+New-Item -Path $PROFILE -ItemType File -Force
+```
+
+4. PowerShell can load it automatically if you dot-source it: 
+```
+. $PROFILE
+```
+
+
 ====================================================================
 # 3. Credit: 
 ```
