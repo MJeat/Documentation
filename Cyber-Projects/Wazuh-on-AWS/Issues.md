@@ -34,6 +34,7 @@ sudo /var/ossec/bin/wazuh-control info -v
 
 # Issue #2: The ServerSide IP keeps automatically registering itself inside Wazuh Manager (DefenderSide) <br>
 <img width="672" height="129" alt="Screenshot 2026-01-20 182504" src="https://github.com/user-attachments/assets/d3bbbcb4-e79b-4c24-9d0c-a7eca1d75f33" />
+
 You can see the agent ID: 003 does not have a name because it is automatically registered itself. I mean it works and can conclude the project, but the agent itself has no identity or a name. Only IP. 
 
 ## Solution #2:
