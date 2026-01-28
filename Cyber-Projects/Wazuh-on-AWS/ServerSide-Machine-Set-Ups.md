@@ -40,6 +40,13 @@ ubuntu@ip-172-31-29-75:~$ nc -zv 172.31.86.103 1514
 Connection to 172.31.86.103 1514 port [tcp/*] succeeded!
 ```
 
+# Part 2: Logs
+**ServerSide:**
+```
+sudo tail -f /var/ossec/logs/ossec.log
+```
+
+END
 
 
 
