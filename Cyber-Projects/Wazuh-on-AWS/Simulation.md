@@ -59,6 +59,14 @@ Detecting SSH successful login:
 
 <img width="1903" height="866" alt="Screenshot 2026-01-20 234339" src="https://github.com/user-attachments/assets/025e4ff2-f58e-4f57-aa9e-0eb4fc986e0b" />
 
+DefenderSide Machine's Storage (The Aftermath):
+There's an increase in storage usage in /dev/root. This storage space surge is caused by the brute-force attack. And because the Wazuh manager keeps the logs in the storage, it increases each alert.
+
+<img width="613" height="253" alt="Screenshot 2026-01-20 234602" src="https://github.com/user-attachments/assets/337b8a7f-2981-4792-8648-bc36d9214c1f" />
+
+
+
+
 
 _**This Project is concluded.**_
 
