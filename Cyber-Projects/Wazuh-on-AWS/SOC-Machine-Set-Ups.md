@@ -1,4 +1,4 @@
-<img width="1895" height="767" alt="image" src="https://github.com/user-attachments/assets/014b0b0d-8e9b-4804-9571-c7b93c682f7e" />
+
 # Part 1: Initials
 ## Initials:
 ```
@@ -66,14 +66,18 @@ Example:
 Don’t use a subnet of /32 because your public IP can change later. Use /16 gives more room to hope around. Moreover, the other 2 identical IPs are Serverside (Agent) private IP. Make sure it is /32 because we want it to only connect to that specific IP. No hoping around.
 
 ## Step 2: Check ServerSide (Agent):
-Make sure the agent instance is active and running. 
-Copy its private IP (e.g., 172.x.x.x)
+- Make sure the agent instance is active and running.
+- Copy its private IP (e.g., 172.x.x.x)
 
-Step 3: Create Agent:
+## Step 3: Create Agent:
 On the Wazuh manager machine or the SOC machine:
-Add/Remove/Edit agents on the Wazuh Manager machine:
+- Add/Remove/Edit agents on the Wazuh Manager machine:
+```
 sudo /var/ossec/bin/manage_agents
- Please provide the following:                                                                                                                                                                               
+```
+You will see this output:
+```
+Please provide the following:                                                                                                                                                                               
   * A name for the new agent: ServerSide-Attack-Simulation                                                                                                                                                   
   * The IP Address of the new agent: 172.31.29.75                                                                                                                                                            
 Confirm adding it?(y/n): y                                                                                                                                                                                    
@@ -96,13 +100,18 @@ Provide the ID of the agent to extract the key (or '\q' to quit): 001
                                                                                                                                                                                                              
 Agent key information for '001' is:                                                                                                                                                                           
 MDAxIFNlcnZlcnNpZGUtYXR0YWNrLXNpbXVsYXRpb24gMTcyLjMxLjI5Ljc1IDFmZGE3YWQwOTdkMmNlMjkyM2ZlN2ExMzA5NDIxOWYxNTJiZWE3NTg5YzIwYmYxMzk2YTRmZjc0OTZlZjQ0Yjc=
+```
 
-
-
-Step 4: Check active agents from DefenderSide – Confirmation
+## Step 4: Check active agents from DefenderSide – Confirmation
+```
 sudo /var/ossec/bin/agent_control -lc   
+```
+You should see active agents here. Look for the name that you 
 
-Step 5: Check ports
+## Step 5: Check ports
+```
 sudo ss -tulnp | grep 1514
 sudo ss -tulnp | grep 1515
+```
+If both are LISTEN, everything is all good. You may now go to set up the [ServerSide]() or the victim machine now. 
 
