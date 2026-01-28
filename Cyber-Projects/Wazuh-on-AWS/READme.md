@@ -7,7 +7,7 @@
 ## Machines
 1. ServerSide - Victim 
 2. AttackerSide - Attacker
-3. DefenderSide - SOC machine
+3. DefenderSide - SOC machine (Wazuh)
 
 ## Project Difficulty
 Easy
