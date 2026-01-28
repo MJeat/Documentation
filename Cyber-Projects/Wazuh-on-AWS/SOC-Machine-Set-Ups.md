@@ -113,5 +113,5 @@ You should see active agents here. Look for the name that you
 sudo ss -tulnp | grep 1514
 sudo ss -tulnp | grep 1515
 ```
-If both are LISTEN, everything is all good. You may now go to set up the [ServerSide]() or the victim machine now. 
+If both are LISTEN, everything is all good. You may now go to set up the [ServerSide](https://github.com/MJeat/Documentation/blob/main/Cyber-Projects/Wazuh-on-AWS/ServerSide-Machine-Set-Ups.md) or the victim machine now. 
 
