@@ -20,7 +20,7 @@ Type this:
 ```
 sudo bash ./wazuh-install.sh -a -i
 ```
-This is the result:
+This is the result: <br/>
 <img width="866" height="206" alt="Screenshot 2026-01-20 000244" src="https://github.com/user-attachments/assets/76aa298e-561c-4fd1-a4c0-9c5669a13917" />
 
 Confirmation:
