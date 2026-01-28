@@ -1,6 +1,5 @@
 # Issue #1: Incompatible Versions
 ## Issue #1: Both the agent and the Wazuh manager are in different versions
-
 From ServerSide: <br>
 <img width="1311" height="659" alt="Screenshot 2026-01-20 162555" src="https://github.com/user-attachments/assets/d57b715c-eaff-4f85-8494-4b0b541e83c6" />
 
@@ -35,6 +34,7 @@ sudo /var/ossec/bin/wazuh-control info -v
 
 # Issue #2: The ServerSide IP keeps automatically registering itself inside Wazuh Manager (DefenderSide) <br>
 <img width="672" height="129" alt="Screenshot 2026-01-20 182504" src="https://github.com/user-attachments/assets/d3bbbcb4-e79b-4c24-9d0c-a7eca1d75f33" />
+You can see the agent ID: 003 does not have a name because it is automatically registered itself. I mean it works and can conclude the project, but the agent itself has no identity or a name. Only IP. 
 
 ## Solution #2:
 First, on the DefenderSide (Wazuh Manager):
