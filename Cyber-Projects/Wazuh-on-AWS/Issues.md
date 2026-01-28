@@ -53,6 +53,7 @@ sudo nano /var/ossec/etc/ossec.conf
 ```
 <br>
 <img width="706" height="397" alt="Screenshot 2026-01-20 184144" src="https://github.com/user-attachments/assets/ab22bad0-a751-48d8-a934-b996927f76d8" />
+
 Then,
 ```
 sudo /var/ossec/bin/manage_agents
