@@ -11,3 +11,7 @@
 
 ## Project Difficulty
 Easy
+
+## Project Duration
+- Started: 20th Jan 2026
+- Ended: 23rd Jan 2026
