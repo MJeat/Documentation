@@ -14,7 +14,7 @@ const BUCKET = "company-storage-network-project";
 
 const s3 = new S3Client({
     region: "us-east-1"
-    // No credentials here — using IAM Role (correct production practice)
+    // Using IAM Role on the EC2 instance — do NOT hardcode keys
 });
 
 const db = mysql.createConnection({
@@ -65,11 +65,11 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
     if (!req.file) return res.status(400).json({ error: "No file uploaded" });
 
     const file = req.file;
-    const username = "AdminUser";
+    // Make S3 key unique to avoid overwriting
+    const key = `${Date.now()}-${file.originalname}`;
 
     try {
-        const key = Date.now() + "-" + file.originalname;
-
+        // Upload to S3
         await s3.send(new PutObjectCommand({
             Bucket: BUCKET,
             Key: key,
@@ -79,15 +79,11 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
 
         const s3Url = `https://${BUCKET}.s3.amazonaws.com/${key}`;
 
-        const sql = `
-            INSERT INTO uploads (filename, s3_url)
-            VALUES (?, ?, ?)
-        `;
-
-        db.query(sql, [username, file.originalname, s3Url], (err) => {
+        // Save metadata in DB (only columns we have)
+        const sql = "INSERT INTO uploads (filename, s3_url) VALUES (?, ?)";
+        db.query(sql, [file.originalname, s3Url], (err) => {
             if (err) return res.status(500).json({ error: err.message });
-
-            res.json({ message: "Upload successful" });
+            res.json({ message: "Upload successful", file: { filename: file.originalname, s3_url: s3Url } });
         });
 
     } catch (err) {
@@ -100,9 +96,7 @@ app.post('/api/upload', upload.single('file'), async (req, res) => {
 app.delete('/api/files/:id', (req, res) => {
     const id = req.params.id;
 
-    const sql = "SELECT s3_url FROM uploads WHERE id = ?";
-
-    db.query(sql, [id], async (err, results) => {
+    db.query("SELECT s3_url FROM uploads WHERE id = ?", [id], async (err, results) => {
         if (err) return res.status(500).json({ error: err.message });
         if (results.length === 0)
             return res.status(404).json({ error: "File not found" });
@@ -111,11 +105,13 @@ app.delete('/api/files/:id', (req, res) => {
         const key = s3Url.split('.com/')[1];
 
         try {
+            // Delete from S3
             await s3.send(new DeleteObjectCommand({
                 Bucket: BUCKET,
                 Key: key
             }));
 
+            // Delete from DB
             db.query("DELETE FROM uploads WHERE id = ?", [id], (err) => {
                 if (err) return res.status(500).json({ error: err.message });
                 res.json({ message: "Deleted successfully" });
