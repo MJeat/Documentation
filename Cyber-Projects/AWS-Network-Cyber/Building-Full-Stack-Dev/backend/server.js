@@ -13,15 +13,15 @@ const upload = multer({ storage: multer.memoryStorage() });
 const BUCKET = "company-storage-network-project";
 
 const s3 = new S3Client({
-    region: "us-east-1"
+    region: "us-east-1" // Location: Amazon S3 > General Purpose Buckets > Your-bucket > AWS Region
     // Using IAM Role on the EC2 instance — do NOT hardcode keys
 });
 
 const db = mysql.createConnection({
-    host: 'company-db.c2lqwc4e8qkg.us-east-1.rds.amazonaws.com',
-    user: 'admin',
-    password: 'CompanyNetwork123',
-    database: 'companyDBTest'
+    host: 'company-db.c2lqwc4e8qkg.us-east-1.rds.amazonaws.com', // To find: RDS Service > Databases > Click your DB > Connectivity & Security tab (e.g., company-db.xyz.us-east-1.rds.amazonaws.com)
+    user: 'admin', // database user
+    password: 'CompanyNetwork123', // database password
+    database: 'companyDBTest' // database name
 });
 
 db.connect(err => {
