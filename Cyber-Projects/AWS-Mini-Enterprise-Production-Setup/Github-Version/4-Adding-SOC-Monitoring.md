@@ -1,4 +1,4 @@
-The full-stack development is enough. However, if you want to integrate AWS security monitoring or your very own EC2 to monitor, there might be changes to all instances and services (e.g., reverse proxy, honeypot, private server, S3, and DB).
+<img width="924" height="726" alt="Screenshot 2026-02-18 115528" src="https://github.com/user-attachments/assets/25cf8941-1435-40bb-b0c3-d8ebd557d3fc" />The full-stack development is enough. However, if you want to integrate AWS security monitoring or your very own EC2 to monitor, there might be changes to all instances and services (e.g., reverse proxy, honeypot, private server, S3, and DB).
 
 # About CloudWatch
 Source: 
@@ -82,7 +82,7 @@ For MySQL to actually generate those logs so they can be sent to CloudWatch, you
 
 Click Saves
 
-<img width="1572" height="714" alt="Screenshot 2026-02-18 105654" src="https://github.com/user-attachments/assets/4be76482-9112-4984-80f0-24db19541a8e" />
+<img width="1341" height="727" alt="Screenshot 2026-02-18 114301" src="https://github.com/user-attachments/assets/9dee1f60-263f-4791-9c62-cfc9e87dec40" />
 
 🛠️ Step 3: Attach the Group to your Database
 1. Go to RDS Console > Databases > Select your DB.
@@ -91,7 +91,7 @@ Click Saves
 4. Change DB parameter group from default.mysql... to your new soc-mysql-parameters.
 5. Scroll to the bottom, click Continue, select Apply immediately, and click Modify DB Instance.
 
-<img width="1291" height="782" alt="Screenshot 2026-02-18 105709" src="https://github.com/user-attachments/assets/014b37c8-976b-49d6-9467-89abec30ee11" />
+<img width="924" height="726" alt="Screenshot 2026-02-18 115528" src="https://github.com/user-attachments/assets/93afe744-b561-40fb-9a7a-4cb440bac48e" />
 
 **Confirmation:**
 
@@ -223,9 +223,19 @@ sudo /opt/aws/amazon-cloudwatch-agent/bin/amazon-cloudwatch-agent-ctl \
 
 <img width="949" height="709" alt="Screenshot 2026-02-18 122821" src="https://github.com/user-attachments/assets/2bdb87f2-2912-4879-b0c7-90d7468dad9f" />
 
+**Result in CloudWatch: (Logs have been created) – Final result**:
 
+<img width="802" height="704" alt="Screenshot 2026-02-18 122913" src="https://github.com/user-attachments/assets/b5028737-7d66-4c03-9223-4929422f60eb" />
 
+## 1.3. CloudTrail
+This is for AWS account modification and S3 bucket modifications. 
 
+<img width="1572" height="714" alt="Screenshot 2026-02-18 105654" src="https://github.com/user-attachments/assets/ad556dba-28ea-4d34-a33e-966da9e5ecf6" />
+
+**Note: The bucket name should be unique because it could conflict with other people’s naming conventions. **
+
+<img width="1291" height="782" alt="Screenshot 2026-02-18 105709" src="https://github.com/user-attachments/assets/903c5fc7-e7bd-478e-ad93-4462aaab697f" />
+<img width="1264" height="607" alt="Screenshot 2026-02-18 105721" src="https://github.com/user-attachments/assets/1c012d2d-0f93-45e0-a60e-798b8d79964d" />
 
 
 
