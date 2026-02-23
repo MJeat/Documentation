@@ -673,4 +673,21 @@ We need to add a fleet server to our own SOC platform instance. Go to the search
 
 The Command: Elastic will give you a long command that looks like a curl and sudo ./elastic-agent install. Copy this command.
 
+<img width="1901" height="884" alt="Screenshot 2026-02-21 123510" src="https://github.com/user-attachments/assets/a7127cd4-687a-457e-928c-db415b2e26d9" />
+
+**Example: **
+```
+curl -L -O https://artifacts.elastic.co/downloads/beats/elastic-agent/elastic-agent-9.3.0-linux-x86_64.tar.gz
+tar xzvf elastic-agent-9.3.0-linux-x86_64.tar.gz
+cd elastic-agent-9.3.0-linux-x86_64
+sudo ./elastic-agent install \
+  --fleet-server-es=http://localhost:9200 \
+  --fleet-server-service-token=AAEAAWVsYXN0aWMvZmxlZXQtc2VydmVyL3Rva2VuLTE3NzE2NTE5MDY0MTM6NnBscDRIZzZUS09FVGNiTGV2c1V6UQ \
+  --fleet-server-policy=fleet-server-policy \
+  --fleet-server-port=8220 \
+  --install-servers
+```
+
+
+
 
