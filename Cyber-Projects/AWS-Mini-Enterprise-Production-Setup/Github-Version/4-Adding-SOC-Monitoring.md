@@ -475,13 +475,136 @@ Ping connection test:
 The downside is that you can’t scroll up to the previous command, nor can you copy and paste any code or CLI inside. You need to type manually. Actually, you can. Just type: `bash`
 
 
+## 2.10. VPC Peering/Tunneling Connection
+Source: [Link](https://www.youtube.com/watch?v=ZFe70EZqU18&pp=ugUHEgVlbi1VU9IHCQmHCgGHKiGM7w%3D%3D)
+
+For the main VPC to connect to the security VPC, each VPC’s route table has to have each other’s IP address.
+- 10.0.0.0/16 – Main VPC
+- 10.1.0.0/16 – Security VPC
+
+First, test the connection using an instance from the public subnet of any of the VPCs and curl another public instance of another VPC. See if you can curl it. 
+Configuration & setup for both EC2 instances (you can just follow the link above):
+- Create 1 public instance in the public subnet of the main VPC
+- Create 1 public instance in the public subnet of the security VPC
+- Each instance has Amazon Linux
+- Configure their VPC and subnet carefully
+- Scroll at the end > Click on Advanced Detail > Find the writing box > Paste this code (will create HTTP web):
+
+```
+#!/bin/bash
+# User data for new EC2 instances
+# install httpd (Linux 2 version)
+yum update -y
+yum install -y httpd
+systemctl start httpd
+systemctl enable httpd
+echo "<h1> Hello! This private IP is from $(hostname -f)</h1>" > /var/www/html/index.html
+```
+
+Instance from the main VPC – public subnet:
+
+<img width="1083" height="371" alt="Screenshot 2026-02-20 221843" src="https://github.com/user-attachments/assets/83152d7c-27e8-43c7-aa3e-7a45a6707237" />
+
+Instance from the Security VPC – public subnet: <br>
+{I deleted the image, but it resulted in the same Failed to connect error as shown in the above image}
+
+Second, create a VPC peering connection.
+### 2.10.1. Creating Peering Connection
+
+<img width="988" height="735" alt="Screenshot 2026-02-20 212920" src="https://github.com/user-attachments/assets/cc08974f-d54f-496b-b90b-97ba86f87c96" />
+
+<img width="1266" height="537" alt="Screenshot 2026-02-20 212950" src="https://github.com/user-attachments/assets/02b15c48-9770-448c-81f5-81733dbf639d" />\
 
 
+**Note: Any VPC can be an accepter/requester or the other way around. It doesn’t matter. It’s just a Point-to-point connection. **
+
+Accept Request: 
+
+<img width="1527" height="648" alt="Screenshot 2026-02-20 213240" src="https://github.com/user-attachments/assets/de4c0164-e7a2-45c9-b627-53c710148c9f" />
+
+### 2.10.2. Peering Routable
+Next,  go to the route table for each VPC and add the IP range of the other VPC. For the main VPC to connect to the security VPC, each VPC’s route table has to have each other’s IP address.
+
+<img width="1248" height="519" alt="Screenshot 2026-02-20 221432" src="https://github.com/user-attachments/assets/982b3551-f917-48f0-8cc0-b11d16a0f8a2" />
+
+Both SOCs' route tables (public & private) can follow the same setup from the public routable below. Add the main VPC’s IP inside:
+
+<img width="1600" height="550" alt="Screenshot 2026-02-20 221358" src="https://github.com/user-attachments/assets/adb1883b-7372-4ab2-bf89-43a11d058988" />
+
+Both main VPCs’ route tables (public & private) can follow the same setup from the public routable below. Add the main VPC’s IP inside:
+
+**Testing if the VPC peering connection works** <br>
+Instance from the Main VPC – public subnet:
+
+<img width="635" height="343" alt="Screenshot 2026-02-20 222143" src="https://github.com/user-attachments/assets/2ca3549d-49e3-4cff-8386-5b30db405275" />
+
+Instance from the Security VPC – public subnet: <br>
+You can curl from the public security instance and should have a similar result as the instance above.
 
 
+## 2.11. Elastic Setup
 
+Set up Elastic on the instance in the private subnet of the Security VPC. <br>
+Source (didn’t use): [Link](https://www.youtube.com/watch?v=BpLDDuCaOTA)
 
+**Initialization** <br>
+First, get into the SOC platform via SSM. Then follow the CLIs below.
+```
+sudo apt-get update && sudo apt-get upgrade -y
+sudo apt install openjdk-21-jdk (Note that 21 is the version. Stay updated)
+```
+**Install Docker**
+```
+sudo apt-get install -y docker.io 
+```
+**Start Docker and ensure it runs on boot**
+```
+sudo systemctl start docker 
+sudo systemctl enable docker
+```
+**Switch to root**
+```
+sudo -i 
+```
+**Add ssm-user to the docker group**
+```
+usermod -aG docker ssm-user
+```
+**Verify**
+```
+id ssm-user    # Should show: groups=...,docker
+docker ps  # Should return an empty list, not a permission error
+```
 
+**Installation**
+```
+cd ~
+curl -fsSL https://elastic.co/start-local | sh
+```
+This will spin up Elasticsearch + Kibana via Docker Compose and print out something like:
+```
+🔐 Kibana is up!
+   URL: http://localhost:5601
+   Username: elastic
+   Password: <SAVE_THIS_PASSWORD>
+```
+
+**Elastic Credentials**
+
+<img width="895" height="788" alt="Screenshot 2026-02-21 095646" src="https://github.com/user-attachments/assets/005a8cec-c549-46a9-aca5-d9dac9e02e8a" />
+
+🎉 Congrats, Elasticsearch and Kibana are installed and running in Docker!
+- 🌐 Open your browser at http://localhost:5601
+- Username: `elastic` (Example)
+- Password: ```jZQ7Ve7F``` (Example)
+- 🔌 Elasticsearch API endpoint: ```http://localhost:9200```
+- 🔑 API key: ```X3pZY2Zwd0JBT3IwNFQtcVoyWUc6QUxfVUV2OFBOZlVqVnhPWFdXcTl4UQ==```
+
+Check if both containers are healthy and active:
+`
+docker ps
+`
+Should show elasticsearch and kibana containers with status "healthy"
 
 
 
