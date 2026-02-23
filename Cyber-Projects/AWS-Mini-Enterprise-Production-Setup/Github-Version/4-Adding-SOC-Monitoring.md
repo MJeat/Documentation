@@ -398,7 +398,27 @@ It should look like this
 <img width="1896" height="688" alt="Screenshot 2026-02-19 191207" src="https://github.com/user-attachments/assets/02e43ef8-91a0-42bc-81ed-5256c295c6b5" />
 
 
+## 2.8. IAM Role Set Up
 
+We need to create an IAM role.
 
+<img width="1387" height="530" alt="Screenshot 2026-02-19 191623" src="https://github.com/user-attachments/assets/8b6aba09-e08d-4cf2-bdbb-6c6fdde01d60" />
+
+Trusted entity: ```AWS Service```
+Use case: ```EC2```
+Attach these policies:
+```
+AmazonSSMManagedInstanceCore
+CloudWatchReadOnlyAccess
+AmazonS3ReadOnlyAccess
+AWSCloudTrail_ReadOnlyAccess
+```
+
+Name: ```SOC-Private-Instance-Role```
+
+Then, create a role. Next, attach it to the SOC instance.
+```
+Attach to Instance: EC2 Console > Select SOC Instance > Actions > Security > Modify IAM Role > Select SOC-Private-Instance-Role
+```
 
 
