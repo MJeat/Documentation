@@ -1,6 +1,6 @@
 
 # VPC
-How to create VPC and subnets: [Link](https://www.youtube.com/watch?v=TUTqYEZZUdc)
+How to create VPC and subnets: [Link](https://www.youtube.com/watch?v=TUTqYEZZUdc) <br>
 First, create a VPC
 
 Create public subnet & Private subnet:
@@ -18,4 +18,4 @@ Analogy: Chef > Waiter > Customer
 ```
 - Both the public subnet & public route table have an IGW.
 - While both the private subnet & private route table have a NAT gateway. 
-In simple terms, a NAT gateway stays in the public subnet because the public subnet also has IGW or Internet access. The private subnet and its instances only take the NAT IP and its ID to use, since that is NAT’s responsibility, to provide data on behalf of the private client.
+<br> In simple terms, a NAT gateway stays in the public subnet because the public subnet also has IGW or Internet access. The private subnet and its instances only take the NAT IP and its ID to use, since that is NAT’s responsibility, to provide data on behalf of the private client.
