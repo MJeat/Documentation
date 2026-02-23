@@ -72,6 +72,7 @@ _(from Public instance)_
 Inbound rule: 
 - HTTP, Custom, 0.0.0.0/0
 - The SSH IP range is your router's public IP. It is safer. Outbound: leave it as default (0.0.0.0/0)
+Example: 32.34.390.0/24 for your router's public IP
 
 _(from Private instance)_
 <br><img width="1917" height="727" alt="Screenshot 2026-01-26 203021" src="https://github.com/user-attachments/assets/304f34ff-b8d5-49b9-bb3a-36bb0c24d508" />
