@@ -1,4 +1,4 @@
-<img width="924" height="726" alt="Screenshot 2026-02-18 115528" src="https://github.com/user-attachments/assets/25cf8941-1435-40bb-b0c3-d8ebd557d3fc" />The full-stack development is enough. However, if you want to integrate AWS security monitoring or your very own EC2 to monitor, there might be changes to all instances and services (e.g., reverse proxy, honeypot, private server, S3, and DB).
+The full-stack development is enough. However, if you want to integrate AWS security monitoring or your very own EC2 to monitor, there might be changes to all instances and services (e.g., reverse proxy, honeypot, private server, S3, and DB).
 
 # About CloudWatch
 Source: 
@@ -236,6 +236,61 @@ This is for AWS account modification and S3 bucket modifications.
 
 <img width="1291" height="782" alt="Screenshot 2026-02-18 105709" src="https://github.com/user-attachments/assets/903c5fc7-e7bd-478e-ad93-4462aaab697f" />
 <img width="1264" height="607" alt="Screenshot 2026-02-18 105721" src="https://github.com/user-attachments/assets/1c012d2d-0f93-45e0-a60e-798b8d79964d" />
+
+
+**Click Next, then at Choose Log Event:**
+
+1. Management events (MUST CHECK)
+- What it is: Logs "Control Plane" actions like starting an EC2, changing a Security Group, or deleting a Database.
+- Why: This is the core of AWS auditing. If someone hacks your AWS Console, this is where you see it.
+- Cost: The first copy is free.
+2. Data events (MUST CHECK)
+- What it is: Logs "Data Plane" actions inside your resources—specifically S3 object access (who downloaded file.jpg) and RDS API activity.
+- Why: Since your app is a File Manager, you need to know if someone is bypasssing your app and accessing the S3 bucket directly.
+- Configuration: Once you check this, you must select S3 as the resource type so it monitors your specific bucket.
+3. Insights events (OPTIONAL / RECOMMENDED)
+- What it is: AWS uses AI to look for "unusual" spikes in API calls. For example, if your "AdminUser" suddenly deletes 1,000 files in 1 minute, Insights will flag it as an anomaly.
+- Why: Great for SOC alerts, but it takes about 7 days to "learn" your normal behavior before it starts working.
+- Verdict: Check it if you want automated "Anomaly Detection."
+4. Network activity events (SKIP FOR NOW)
+- What it is: Logs API calls that go through VPC Endpoints.
+- Why: Unless you have specifically created "Interface VPC Endpoints" for S3 or EC2 (which costs extra money per hour), you won't have any data here.
+- Verdict: Uncheck it to keep your logs clean and save money.
+- 
+**Management Event:**
+  
+Enable Read and Write. Then:
+
+<img width="1513" height="676" alt="Screenshot 2026-02-18 110632" src="https://github.com/user-attachments/assets/11656a9e-f672-49a5-b860-ca0d7bed408b" />
+
+You can skip the Aggregated Events step. AWS recently added this to help massive enterprises (think thousands of employees) who generate millions of S3 "Read/Write" events every minute. It summarizes those thousands of events into one single "report" every 5 minutes. Finally, click create.
+
+Bucket Location:
+
+<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/71e5e257-269b-47d1-a1ff-0f87bc856e5c" />
+
+**Confirmation:**
+In S3, you can navigate using the path I gave. You should click the Open button and see a long JSON script.
+
+<img width="1599" height="178" alt="Screenshot 2026-02-18 112511" src="https://github.com/user-attachments/assets/685180bd-b09b-47b0-a429-4397d7dd83f0" />
+
+In CloudWatch, since you enable CloudWatch Logs while creating CloudTrail, go to CloudWatch > Log Management > Log Groups > Find your CloudTrail logs folder. You should see log streams. Check your AWS account ID with the long number in the log and check the time as well. 
+
+<img width="603" height="401" alt="Screenshot 2026-02-18 112739" src="https://github.com/user-attachments/assets/861bdeb6-17da-4878-94ec-7d176635d227" />
+
+**To-do List – Phase 1 & 2: Completed. **
+From CloudWatch
+
+<img width="473" height="482" alt="Screenshot 2026-02-18 124005" src="https://github.com/user-attachments/assets/1fce84bc-0de6-4a02-84fe-0028cf483ded" />
+
+From CloudTrail
+
+<img width="1343" height="744" alt="Screenshot 2026-02-18 124055" src="https://github.com/user-attachments/assets/dcba14eb-be1b-45a5-97d9-e13931d2f614" />
+
+==================================================================
+
+# Creating a Centralized SOC Platform
+
 
 
 
