@@ -688,6 +688,413 @@ sudo ./elastic-agent install \
   --install-servers
 ```
 
+### 2.12.2. Add Fleet Agent to the SOC instance
+
+Go back to your SSM SOC instance, make sure you are in the ssm-user or simply type: ``cd ~``
+Then, paste the CLI from the example above. 
+
+What this does: It installs the Elastic Agent on the SOC itself and tells it to act as the "Fleet Server" (the manager). It will take about 1–2 minutes. When it's done, the Kibana screen will display ``"Fleet Server connected successfully"`` or ``“Elastic Agent has been successfully installed”``. 
+
+**Note: Don’t forget to type: Y for Yes. You will be prompted after entering the script**
+
+<img width="1382" height="634" alt="Screenshot 2026-02-21 124131" src="https://github.com/user-attachments/assets/5175df6a-e5ae-42f8-9c97-d609ad3f6111" />
+
+Once you see  ``"Fleet Server connected successfully"`` or ``“Elastic Agent has been successfully installed”`` in the SSM SOC terminal, go back to the Elastic WebUI and confirm the connection:
+
+<img width="943" height="824" alt="Screenshot 2026-02-21 124823" src="https://github.com/user-attachments/assets/f78449a7-b8da-4854-a29b-bf7dd4a4d656" />
+
+**⚙️ Next Step: Update Global Settings (The "Private" Fix)** <br>
+Now that the server exists, we need to make sure every future agent knows to look for it at the right address.
+- In Fleet, go to the Settings tab (top right).
+- Fleet Server hosts: Click the pencil/edit icon. Make sure it is your private IP: https://<YOUR-SOC-PRIVATE-IP>:8220.
+- Outputs (Elasticsearch): Click the pencil/edit icon on the "Default" output.
+- Change http://localhost:9200 to https://<YOUR-SOC-PRIVATE-IP>:9200.
+- Click Save.
+
+<img width="1782" height="581" alt="Screenshot 2026-02-21 125123" src="https://github.com/user-attachments/assets/6f1f3c95-2584-4dd5-a70c-f7dffda54130" />
+
+Check status:
+``
+sudo systemctl status elastic-agent
+sudo elastic-agent status
+``
+
+- Verify the "Gate" is open (Should see 0.0.0.0 or :::9200) 
+``
+sudo netstat -tulpn | grep 9200
+``
+
+### 2.12.3. Modify Docker Network
+
+It is expected that you get an error saying ``DEGRADE`` or ``127.0.0.1:9200`` from the netstat command. In the WebUI, Fleet – Add Agent page, you are expected to see something like ``“Unhealthy”`` and ``“Add Fleet Server”``. 
+
+The reason behind this is that the Docker ElasticSearch network is only allowing ``localhost`` or ``127.0.0.1:9200`` of the SOC instance, and cannot send data to the WebUI. Don’t forget that the SOC instance inbound rule should have 2 sources that have the same port of 9200, the SOC Instance Security Group, and the production/main VPC’s IP range. Now, let’s fix this issue.
+
+Next, we configure the Docker network in the SOC instance.
+``
+pwd 
+cd /home/ssm-user/elastic-start-local 
+docker compose down
+nano docker-compose.yml
+``
+
+Then, in service/elasticsearch, change:
+
+<img width="853" height="275" alt="Screenshot 2026-02-21 134140" src="https://github.com/user-attachments/assets/80bceb20-8490-43af-b5f1-509e7d94d3a6" />
+
+Follow by:
+``
+docker compose up -d
+sudo systemctl status elastic-agent
+sudo elastic-agent status
+sudo netstat -tulpn | grep 9200
+docker ps
+``
+These are the results you want:
+
+<img width="1119" height="373" alt="Screenshot 2026-02-21 134211" src="https://github.com/user-attachments/assets/14468bed-2105-4abb-97db-79d51f83323f" />
+<img width="1902" height="168" alt="Screenshot 2026-02-21 140317" src="https://github.com/user-attachments/assets/1b80b068-aca8-4c89-bdd2-58eb4c6ee151" />
+<img width="1792" height="675" alt="Screenshot 2026-02-21 134225" src="https://github.com/user-attachments/assets/3a684111-9bb3-447e-a54e-105f24975ae7" />
+
+
+## 2.13. Configure Logs
+
+Now, it is time to add agents. Remember, I have CloudWatch, CloudTrail, 2 EC2 machines, RDS - MySQL, and S3. What we do is hybrid. We use both Agents and AWS Integration in Kibana.
+- Agents – For both frontend and backend EC2 machines
+- AWS Integration – For CloudWatch, CloudTrail, RDS - MySQL, and S3
+
+### 2.13.1. Elastic Agents
+
+If your frontend and backend storage volume is 8GB, increase them to at least 10-12 GB storage. <br>
+**Increase Volume/Storage in EC2 instances:**
+- Source: [Link](https://www.youtube.com/watch?v=jVffXZc4tf8)
+- Official Documentation: [Link](https://docs.aws.amazon.com/ebs/latest/userguide/recognize-expanded-volume-linux.html)
+
+- First, go to your EC2 and find its volume. Click on the volume and modify volume (Action Button at the top right corner). Adjust the storage > Save.
+- Second, go to your instance and follow along:
+
+**Step 1: Free up space immediately**
+
+See what's eating space
+``
+sudo du -sh /* 2>/dev/null | sort -rh | head -20
+``
+Clean up the elastic agent tarball you downloaded (it's huge)
+``
+cd ~
+rm -f elastic-agent-*.tar.gz
+``
+Clean apt cache
+``
+sudo apt-get clean
+``
+Check again
+``
+df -h
+``
+
+**Step 2: Fix the partition resize**
+
+1. Resize the partition to use the full disk
+``
+sudo growpart /dev/nvme0n1 1
+``
+2. Then resize the filesystem to fill the partition
+``
+sudo resize2fs /dev/nvme0n1p1
+``
+3. Verify
+``
+df -h  # should now show ~11GB
+``
+
+**Step 3: Go to AWS Console**
+Also check if this EC2's EBS volume was recently resized — if the volume was resized in AWS but the OS wasn't notified, a reboot might be needed first: ``sudo reboot`` <br>
+Then retry the growpart after reboot. Now both machines storage shouldn’t be a problem right now. 
+
+# NEXT:
+
+- Go to this path in the browser URL: ``http://localhost:5601/app/fleet/agents``. Make sure the server is Healthy. If not, go back to the ``WebUI Elastic Setup – Modify Docker Network`` above in this document.
+- Then, click Add Agent. 
+- Policy Name: Main-VPC-EC2-Policy
+- Click Next or whatever button is next.
+- Pick the right Linux specs. And copy the script.
+
+Before running, verify that the Frontend/Backend can reach the SOC Fleet server:
+``
+curl http://<SOC-PRIVATE-IP>:8220
+``
+If it times out, add an inbound rule to the SOC Security Group allowing TCP 8220 from the Main VPC CIDR. If successful, you should see something like ``“Client sent an HTTP request to an HTTPS server”``.
+
+Next, for each of the EC2 instances, follow these CLI:
+``
+cd ~
+{Paste-your-script-from-kibana-add-agents}
+``
+**Example script:**
+``
+curl -L -O https://artifacts.elastic.co/downloads/beats/elastic-agent/elastic-agent-9.3.0+build202602051825-linux-x86_64.tar.gz 
+tar xzvf elastic-agent-9.3.0+build202602051825-linux-x86_64.tar.gz
+cd elastic-agent-9.3.0+build202602051825-linux-x86_64
+sudo ./elastic-agent install --url=https://10.1.1.25:8220 --enrollment-token=SnQ3LWZwd0JONTVuX1RGOEViOUc6YndTYzI3dS1tSkRWWlktZUZ2SFFlQQ== --insecure
+``
+**Note: Don’t forget to type: Y for Yes. You will be prompted after entering the script**
+
+From Frontend:
+
+<img width="1393" height="574" alt="Screenshot 2026-02-21 141335" src="https://github.com/user-attachments/assets/8f45d6d6-0a39-442f-a106-3a072453fdff" />
+
+``Elastic Agent has been successfully installed.``
+
+**From Backend:**
+
+<img width="1381" height="513" alt="Screenshot 2026-02-21 141425" src="https://github.com/user-attachments/assets/e5c3029f-814f-49d5-a7df-609d7cfea552" />
+
+``Elastic Agent has been successfully installed.``
+
+**Confirmation – EC2 Agents Results**
+
+<img width="1554" height="689" alt="Screenshot 2026-02-21 163220" src="https://github.com/user-attachments/assets/c9b4536d-fc18-4b00-abaf-a7fc266e2202" />
+
+
+For confirmation, you should look at the left side of the WebUI. Look for Discover and look at it. Before you configure agents, this page is empty. Since we already configured agents on both EC2 machines from the Main VPC, we should be able to see logs here. You can read JSON logs within each packet and try to find the machine.
+
+<img width="1914" height="880" alt="Screenshot 2026-02-21 163617" src="https://github.com/user-attachments/assets/12c8d2cb-4365-47f4-ab09-3c62759b72e9" />
+
+## 2.14. AWS Integration <br>
+In this URL: ``http://localhost:5601/app/fleet/policies/fleet-server-policy``
+
+You should filter for AWS only. 
+
+5 things you should find. Scroll through the list and toggle ON only these specific items:
+- Collect CloudTrail logs from S3 (For your aws-cloudtrail-logs-mj bucket)
+- Collect VPC flow logs from CloudWatch
+- Collect S3 access logs from S3 (For your company-storage-network-project bucket)
+- Collect logs from CloudWatch (For your RDS MySQL Error/Slow logs)
+- Collect RDS metrics (To see database CPU/Memory usage)
+- Collect EC2 metrics (To monitor your SOC/Frontend/Backend hardware health)
+
+**NOTE: ONLY USE “Fleet Server Policy” when creating any integration. Do not use your non-security platform agent (e.g., from EC2 instances). Example: Main-VPC-EC2-Instance**
+
+==============================================
+
+### 2.14.1. About Policies
+- **Fleet Server Policy** – Is the policy for the agent inside the SOC platform
+- Main-VPC-EC2-Instance – Is the policy for agents in EC2 hosts. This policy has ‘System Integration’ automatically installed after creation. The ‘System Integration’ is used to track each host’s (including SOC) system metric, such as cpu, ram, storage, etc.
+
+==============================================
+
+### 2.14.2. SOC IAM Role - Updated <br>
+The purpose of this new IAM role is to make sure the SOC Platform instance is pulling logs from the right place. More importantly, it is supposed to have the right privilege to do so. The code below has *, meaning access to all resources.
+
+However, for"Read-Only" or "Discovery" actions, AWS often requires a wildcard (e.g., ec2:DescribeInstances). The only time it is dangerous is when it is paired with Write or Access actions. (e.g., s3:GetObject on Resource: "*"). Now, we go to the IAM role of the SOC-Private-Instance-Role. We create a new incline policy or modify the old one call ``“SOC-S3-AccessLogs-Read”``. Paste this script below. 
+
+``
+{
+    "Version": "2012-10-17",
+    "Statement": [
+        {
+            "Sid": "RestrictedDataAccess",
+            "Effect": "Allow",
+            "Action": [
+                "s3:GetObject",
+                "s3:ListBucket",
+                "s3:GetBucketLocation"
+            ],
+            "Resource": [
+                "arn:aws:s3:::aws-cloudtrail-logs-mj",
+                "arn:aws:s3:::aws-cloudtrail-logs-mj/*",
+                "arn:aws:s3:::company-storage-network-project",
+                "arn:aws:s3:::company-storage-network-project/*",
+                "arn:aws:s3:::company-storage-access-logs",
+                "arn:aws:s3:::company-storage-access-logs/*"
+            ]
+        },
+        {
+            "Sid": "MandatoryWildcardDiscovery",
+            "Effect": "Allow",
+            "Action": [
+                "ec2:DescribeInstances",
+                "ec2:DescribeRegions",
+                "cloudwatch:GetMetricData",
+                "cloudwatch:ListMetrics",
+                "logs:DescribeLogStreams",
+                "rds:DescribeDBInstances",
+                "logs:DescribeLogGroups",
+                "logs:GetLogEvents",
+                "logs:FilterLogEvents"
+            ],
+            "Resource": "*"
+        }
+    ]
+}
+``
+Save.
+
+==============================================
+
+### 2.14.3. CloudTrail
+1. Open Kibana.
+2. Click the Search Bar at the top and type "Fleet". Click it.
+3. Click the Agent Policies tab.
+4. IMPORTANT: Click on your Fleet Server Policy (The one your SOC instance uses).
+  - Do NOT click "Main-VPC-EC2". If you add it there, the web servers will try to run it again.
+
+**Configuration page:** <br>
+Under "Configure integration":
+- Integration name: cloudtrail-soc (or anything you like)
+- 
+Under "Collect CloudTrail logs from S3":
+- Toggle this ON
+- Queue URL: Leave blank for now
+- Bucket ARN or name: type SOC-Trail-Audit (your bucket name)
+- Access Key ID: Leave blank
+- Secret Access Key: Leave blank
+- Session Token: Leave blank
+- Region: us-east-1 (or whatever your region is)
+- Leaving credentials blank is intentional — it will automatically use your SOC-Final-Role IAM role attached to the instance.
+- Then click "Add Integration". 
+
+For confirmation, you should run this command on 4 places. Make sure it shows HEALTHY.
+- Main VPC: Public & Private Instances
+- Security VPC: SOC Platform
+
+<img width="468" height="159" alt="Screenshot 2026-02-21 202414" src="https://github.com/user-attachments/assets/e79c424d-5a45-4b59-a906-3f7ccb11eabd" />
+<img width="717" height="227" alt="Screenshot 2026-02-21 202452" src="https://github.com/user-attachments/assets/59b70082-eaed-45a6-88df-7be748ff0625" />
+
+
+Regardless of the IP or location, just look for the word HEALTHY from the related agents. Should run this every time you set up each integration to see what failed to avoid a huge headache in the future.
+
+==============================================
+
+### 2.14.4. VPC Flow Logs
+- Find the Toggle: Scroll down to "Collect VPC flow logs from CloudWatch".
+- Toggle it: ON.
+- Click "Change defaults" and fill in these exact boxes:
+  - Log Group Name: Enter the name of the log group you created in AWS (e.g., vpc-flow-logs or /aws/vpc/main).
+  - Region: Your AWS region (e.g., us-east-1).
+  - You don’t necessarily need to fill in other boxes besides what are shown in this document. Done.
+- Additional Info – Scroll down to "Collect logs from CloudWatch" (the general one):
+  - Note: You can actually use either the specific "VPC flow logs" toggle OR the general "Collect logs" toggle. I recommend using the "Collect VPC flow logs from CloudWatch" one because it has a built-in "parser" that knows how to read the VPC columns (Source IP, Port, Action) automatically.
+  - Also, choosing Collect Logs from S3 is better because flow logs output A LOT of data. Plus, CloudWatch increases in price as the volume/storage increases.
+  
+==============================================
+
+### 2.14.5. S3 Access Logs
+
+This is a two-part setup. Many beginners make the mistake of thinking the Elastic Agent reads the production bucket directly. In reality, S3 Access Logging is a feature you turn on in AWS that "writes" text files about what’s happening. Then, the Elastic Agent reads those text files. 
+
+First, you need to make another bucket to store logs from S3 Access Logs. You can name it: ``company-storage-access-logs``
+
+**Phase 1: The AWS Side (Generate the Logs)**
+
+AWS does not log S3 access by default because it costs a tiny bit of storage money. You have to turn the ``"recorder"`` on.
+- Go to the S3 Console and click on your production bucket: company-storage-network-project.
+- Click the Properties tab.
+- Scroll down to Server access logging and click Edit.
+- Select Enable.
+- Target Bucket: Choose a bucket to store the logs. (Earlier, you mentioned company-storage-access-logs. Use that one).
+- Prefix: Type logs/
+- Why? This keeps the log files in a neat folder so they don't clutter the root of your bucket.
+- Click Save changes. <br>
+**Note: It can take up to one hour for AWS to start delivering the first log files to that bucket. Don't panic if Elastic doesn't see anything immediately.**
+
+**Phase 2: The IAM Side (The Keys)**
+
+Your SOC agent needs to be able to "reach into" the access logs bucket, not just the production bucket. Go to your SOC-Private-Instance-Role in IAM. <br>
+Update your custom policy to ensure the Resource includes the destination bucket where the logs are being written:
+``
+{
+    "Effect": "Allow",
+    "Action": [
+        "s3:GetObject",
+        "s3:ListBucket",
+        "s3:GetBucketLocation"
+    ],
+    "Resource": [
+        "arn:aws:s3:::company-storage-access-logs",
+        "arn:aws:s3:::company-storage-access-logs/*"
+    ]
+}
+``
+
+**Phase 3: The Kibana Side (The Toggle)**
+
+Now we tell the Elastic Agent to go and fetch those files.
+- Go to Fleet > Agent Policies and click your Fleet Server Policy (SOC).
+- Find your AWS Integration and click Edit.
+- Scroll down to the toggle: Collect S3 access logs from S3.
+- Toggle it ON.
+- Click Change defaults (the blue text) and fill in these three boxes:
+- Bucket Name: company-storage-access-logs (This is the bucket containing the logs).
+- Prefix: logs/ (Matches what you typed in Phase 1).
+- Region: Your AWS region (e.g., us-east-1).
+- Scroll to the bottom and click Save and Deploy.
+
+==============================================
+
+### 2.14.6. RDS Logs – MySQL
+
+RDS is the only service that does not send logs to CloudWatch by default. We have to tell AWS to start "exporting" them.
+
+**🛠️ Step 1: The AWS Side (Enable RDS Log Exports)**
+
+- Log in to the AWS Console and go to RDS > Databases.
+- Click on your Database Name.
+- Click the Modify button at the top right.
+- Scroll down to the Log exports section.
+- Check the boxes for:
+  - Error log
+  - General log
+- Scroll to the bottom and click Continue.
+- Select Apply immediately and click Modify DB Instance. <br>
+**Note: This does not reboot your database, but it tells AWS to start creating the Log Groups in CloudWatch.**
+  
+**🛠️ Step 2: Configure RDS Logs in Kibana**
+
+Go to Management > Fleet > Agent Policies > Fleet Server Policy and click Edit on your AWS integration. Find the Toggle: Scroll to Collect logs from CloudWatch.
+- Toggle it: ON.
+- Click "Change defaults".
+- Add Error Logs:
+  - Log Group Name (not ARN): /aws/rds/instance/<YOUR_DB_NAME>/error
+  - Region: Your region (e.g., us-east-1).
+- Add General Logs:
+  - Since you want both, look for an "Add row" or "+" button (depending on your Kibana version).
+  - If you don't see one, you can simply add the AWS Integration a second time to the same policy specifically for General logs, which I did make a new one called “aws-rds-general-logs-monitor”.
+  - Log Group Name: /aws/rds/instance/<YOUR_DB_NAME>/general
+  - Region: Your region. <br>
+⚠️ Warning for Beginners: "General logs" record every single SQL query. If your app is busy, this will generate a lot of data (and cost). Keep an eye on it!
+
+**🛠️ Step 3: Enable Metrics (The "Easy" Switches)**
+
+While still editing that same AWS integration, look for these two specific toggles:
+
+### 2.14.7. RDS Metrics (CPU/Memory/Connections)
+- Find the Toggle: Collect RDS metrics.
+- Toggle it: ON.
+- Region: us-east-1a or find it yourself in the RDS console
+- Config: Leave everything at default. Your IAM role's rds:DescribeDBInstances permission allows the agent to find the database and pull performance data automatically.
+
+### 2.14.8. EC2 Metrics (Frontend/Backend/SOC Health)
+- Find the Toggle: Collect EC2 metrics.
+- Toggle it: ON.
+- Config: Leave at default.
+- The Magic: Because your SOC instance has ec2:DescribeInstances on Resource: "*", this one agent will now "look" at all three of your servers and report their CPU and RAM usage to Kibana. You do not need to enable this on the Frontend/Backend policies.
+
+**🛠️ Step 4: Final Save**
+- Scroll to the bottom.
+- Ensure AWS Credentials (Access Key/Secret) are still EMPTY.
+- Click Save and Deploy.
+
+==============================================
+## 2.15. Confirmation – AWS Integration Results:
+These are the policies to be made. The aws-soc-monitor is our main integration using the Fleet Server as its Policy. 
+The aws-rds-general-logs-monitor is using the same concepts as the aws-soc-monitor. However, it has only 1 selected log, which is Collect logs from CloudWatch – this is to collect logs from MySQL Database – General Logs.
+
+<img width="1747" height="637" alt="Screenshot 2026-02-21 231201" src="https://github.com/user-attachments/assets/d886bcd1-45ca-402a-bf8f-64804b7146f4" />
+
+
+
 
 
 
