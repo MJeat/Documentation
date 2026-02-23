@@ -298,6 +298,7 @@ Then, open the public instance IP.
 
 # Reasons Approach #1:
 **Why are we using express, aws sdk, and mysql2 here?**
+
 When you're building a professional application, you don't want to "reinvent the wheel." These three libraries are the industry-standard "tools" that allow your Node.js code to talk to the outside world. Think of Node.js as the engine of a car. It provides the power, but it doesn't have a steering wheel, seats, or a GPS. These libraries provide those parts:
 
 **1. Express (The "Steering Wheel" & "Dashboard")**
