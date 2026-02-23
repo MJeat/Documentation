@@ -2,11 +2,10 @@
 # VPC
 How to create VPC and subnets: [Link](https://www.youtube.com/watch?v=TUTqYEZZUdc) <br>
 First, create a VPC
+<br><img width="1907" height="785" alt="Screenshot 2026-01-26 141933" src="https://github.com/user-attachments/assets/743cdf86-2b0d-49c7-92a2-47168c59429a" />
 
 Create public subnet & Private subnet:
-
-
-
+<br><img width="1604" height="480" alt="Screenshot 2026-01-26 142732" src="https://github.com/user-attachments/assets/a207405e-e9fd-4647-b4e0-a0185146838f" />
 
 # Important Note: This is our goal.
 The Internet gateway or IGW should be inside the public subnet. Anything that is inside the public subnet that has the IGW has a public IP that ANYONE can see and access.
