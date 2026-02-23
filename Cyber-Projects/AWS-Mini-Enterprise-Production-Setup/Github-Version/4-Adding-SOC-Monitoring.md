@@ -267,7 +267,7 @@ You can skip the Aggregated Events step. AWS recently added this to help massive
 
 Bucket Location:
 
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/71e5e257-269b-47d1-a1ff-0f87bc856e5c" />
+<img width="1357" height="519" alt="Screenshot 2026-02-18 111146" src="https://github.com/user-attachments/assets/f3b474d7-5b94-40c1-8a89-98c04627e28b" />
 
 **Confirmation:**
 In S3, you can navigate using the path I gave. You should click the Open button and see a long JSON script.
@@ -289,7 +289,7 @@ From CloudTrail
 
 ==================================================================
 
-# Creating a Centralized SOC Platform
+# 2. Creating a Centralized SOC Platform
 
 
 
