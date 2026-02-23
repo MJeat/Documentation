@@ -290,8 +290,112 @@ From CloudTrail
 ==================================================================
 
 # 2. Creating a Centralized SOC Platform
+Based on ur opinion, where should the SOC platform be located in the real world (networking and subnets)? I want my project to be as close to the real enterprise SOC platform location as possible. Then, tell me how to set it up in AWS. I'm using the AWS free tier, so the VM selection is limited. 
+
+I want to make a new VPC dedicated to security monitoring that only allow traffics from the selected resources from the main VPC or cloudwatch, cloudtrail, and VPC flow logs. Guide me to this. I can use t2.medium, FYI. Make sure to be as realistic as possible. Guide me from making a new VPC, set it up to only allow from ... idk you tell me im noob. Then, the guide on setting up the instance for this security VPC. Then, configure this VM until finish, then we can get logs from CloudWatch, CloudTrail, and VPC flow logs.
+
+## 2.1. Security VPC – Creating a new VPC
+
+<img width="723" height="668" alt="Screenshot 2026-02-19 162511" src="https://github.com/user-attachments/assets/62a13a52-800e-4d34-9160-1ecda9d5b9ae" />
+
+Make sure the IPv4 CIDR is different from your main company production VPC.
+
+## 2.2. Internet Gateway – Creating a new IGW
+
+Then, look at the top right corner. Attach this IGW to the security VPC. Done.
+
+<img width="1588" height="509" alt="Screenshot 2026-02-19 163255" src="https://github.com/user-attachments/assets/ca58708e-b697-4322-8c44-a3ce1018de4c" />
+
+You should notice that there’s only one VPC (if you have 2 VPCs). That’s because other VPCs, by assumption, already have an IGW. You can’t attach 1 IGW to 2 different VPCs. 
+
+<img width="1002" height="284" alt="Screenshot 2026-02-19 170111" src="https://github.com/user-attachments/assets/021765c2-7832-4fae-8647-0310ee68fbd8" />
+
+You should notice that there’s only one VPC (if you have 2 VPCs). That’s because other VPCs, by assumption, already have an IGW. You can’t attach 1 IGW to 2 different VPCs. 
+
+## 2.3. Private Subnet – Creating a new Private Subnet
+
+This subnet is for hosting our private SOC platform. Make sure to disable auto-assigned public IPv4. Can check in the Action button.
+
+<img width="772" height="595" alt="Screenshot 2026-02-19 162726" src="https://github.com/user-attachments/assets/61df10e7-fe18-48eb-a479-ba86cc4d4a8f" />
+
+### 2.3.1 Private Route Table– Creating a new Private Route Table
+
+<img width="1587" height="389" alt="Screenshot 2026-02-19 171357" src="https://github.com/user-attachments/assets/fdde9159-0eec-4ad1-b5a8-650416b88b8c" />
+
+Make sure it is associated with the private subnet. Go to Action > Edit Subnet Association > Select private subnet.
+
+<img width="922" height="524" alt="Screenshot 2026-02-19 172135" src="https://github.com/user-attachments/assets/7477a8a5-c4ec-4cbd-937c-c2f8c01e993f" />
+
+Save & then Edit Routes:
+
+<img width="1359" height="511" alt="Screenshot 2026-02-19 172306" src="https://github.com/user-attachments/assets/cc9084c0-eb18-4a1a-bc77-ea0983d27978" />
+
+Now traffic flows:
+SOC EC2 → NAT → IGW → Internet
+
+## 2.4. Public Subnet – Creating a new Public Subnet
+
+This is for the NAT gateway to connect to the IGW for Internet access.
+
+<img width="825" height="607" alt="Screenshot 2026-02-19 170304" src="https://github.com/user-attachments/assets/2c922162-ff53-413f-b12b-d42d310ff388" />
+
+Then, go to this subnet > Action > Edit subnet setting > Enable Public IPv4
+
+<img width="1212" height="466" alt="Screenshot 2026-02-19 170427" src="https://github.com/user-attachments/assets/684bb1dd-e103-4c58-bbfc-49be6c422740" />
+
+### 2.4.1 Public Route Table– Creating a new Public Route Table
+
+<img width="796" height="507" alt="Screenshot 2026-02-19 170613" src="https://github.com/user-attachments/assets/50eb5e72-67e6-4d07-b28e-85bcdbee8215" />
+
+Then, edit routes:
+
+<img width="1569" height="435" alt="Screenshot 2026-02-19 170738" src="https://github.com/user-attachments/assets/df6df7e0-9cff-4400-8f61-2d77aa28c861" />
+
+This would make this subnet to have access to the Internet because we added an Internet Gateway. 
+
+## 2.5. NAT Gateway– Creating a new NAT Gateway
+
+This is to place this gateway in the public subnet. 
+
+<img width="1274" height="735" alt="Screenshot 2026-02-19 170956" src="https://github.com/user-attachments/assets/1ab71af1-3512-41a4-9945-afb8c2eafcee" />
+
+Then, wait until the NAT gateway finishes creating. Then, you should check its Elastic IP. It should be automatically created for the NAT gateway. Just rename it. 
+
+<img width="1589" height="343" alt="Screenshot 2026-02-19 171751" src="https://github.com/user-attachments/assets/ca255cbd-0420-45a9-bd99-582e507293b9" />
+
+## 2.6. Private Instance – Creating a private instance for the SOC platform
+
+<img width="493" height="249" alt="Screenshot 2026-02-19 173053" src="https://github.com/user-attachments/assets/a562a028-3d9b-4625-a867-1e04bb0543cd" />
+
+- Private IP: 10.1.1.25
+- No Public IP. If you see, remove it. 
+
+For security group rules:
+
+**Outbound** 
+- Allow all types, source: 0.0.0.0/0
+- WARNING (LAB ONLY): In a "Military Grade" enterprise, they might restrict outbound traffic (Egress) to only specific AWS IP ranges to prevent "Data Exfiltration" (a hacker sending your data to their own server).
+
+However, for the project:
+- The Elastic Installer: Needs to reach the internet to download gigabytes of software.
+- AWS APIs: The instance needs to reach the global CloudWatch and S3 endpoints to pull your logs.
+- Verdict: Use one rule: All Traffic | All Ports | Destination: 0.0.0.0/0. This is the standard "default" for a reason; it ensures your tools don't break because they can't "call home."
+
+**Inbound:**
+
+| Type       | Port Range | Source              | Purpose                                                                 |
+|------------|------------|---------------------|-------------------------------------------------------------------------|
+| Custom TCP | 9200       | SOC-SG              | Allows the SOC agent to talk to the SOC database                        |
+| Custom TCP | 5601       | Your-Home-IP/32 or /24 | Kibana UI. Accessing the dashboard from your browser.                |
+| Custom TCP | 9200       | 10.0.0.0/16         | Elasticsearch API. Allows your Main VPC instances (Frontend/Backend) to send logs. |
+| Custom TCP | 8220       | 10.0.0.0/16         | Fleet Server. Required if you use Elastic Agents to manage logs from your other servers. |
 
 
+## 2.7. Security VPC – Resource Map Guide
+
+It should look like this
+
+<img width="1896" height="688" alt="Screenshot 2026-02-19 191207" src="https://github.com/user-attachments/assets/02e43ef8-91a0-42bc-81ed-5256c295c6b5" />
 
 
 
