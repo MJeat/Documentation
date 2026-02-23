@@ -404,8 +404,12 @@ We need to create an IAM role.
 
 <img width="1387" height="530" alt="Screenshot 2026-02-19 191623" src="https://github.com/user-attachments/assets/8b6aba09-e08d-4cf2-bdbb-6c6fdde01d60" />
 
-Trusted entity: ```AWS Service```
-Use case: ```EC2```
+Trusted entity: 
+```AWS Service```
+
+Use case: 
+```EC2```
+
 Attach these policies:
 ```
 AmazonSSMManagedInstanceCore
@@ -420,5 +424,69 @@ Then, create a role. Next, attach it to the SOC instance.
 ```
 Attach to Instance: EC2 Console > Select SOC Instance > Actions > Security > Modify IAM Role > Select SOC-Private-Instance-Role
 ```
+
+## 2.9. SSM – AWS System Manager
+Source: [Link](https://www.youtube.com/watch?v=BHUC1WGlR00)
+
+Since our SOC instance is in the private subnet with no public IP, we can’t SSH from our PC. Thus, we use SSM. You can search for System Manager > Session Manager in the AWS search bar. <br>
+**✅ BEST METHOD: AWS Session Manager (Enterprise Standard)**
+Do NOT:
+- ❌ Add public IP
+- ❌ Create bastion host (cost + complexity)
+- ❌ Open SSH to 0.0.0.0/0
+
+**Real enterprises use:** <br>
+🔐 AWS Systems Manager (SSM) Session Manager
+
+It allows:
+- Shell access
+- No public IP
+- No inbound ports needed
+- Fully logged access
+
+We will use this.
+
+**How to "SSH" without an IP**
+- Go to the EC2 Console > Instances.
+- Select your SOC Platform instance.
+- Click the Connect button at the top.
+- Choose the Session Manager tab and click Connect.
+  - Note: If the "Connect" button is greyed out, wait 5 minutes for the SSM Agent (pre-installed on Ubuntu) to check in with the new IAM role.
+- A terminal will open in your browser. You are now "inside" your private SOC instance!
+
+From the SOC instance:
+
+<img width="1867" height="692" alt="Screenshot 2026-02-19 192452" src="https://github.com/user-attachments/assets/b89779f4-031f-4484-a32e-b48a1ffa0b76" />
+
+
+From Session Manager:
+
+<img width="1889" height="709" alt="Screenshot 2026-02-19 192513" src="https://github.com/user-attachments/assets/bb756322-af37-47ff-b848-38475fed29a5" />
+
+
+After you click Connect in the EC2 console or Start Session from the Session Manager, you should see a browser pop up and show this:
+
+<img width="1901" height="677" alt="Screenshot 2026-02-19 192610" src="https://github.com/user-attachments/assets/3c319da4-54d3-489e-8542-768ae3fc95d0" />
+
+Ping connection test:
+
+<img width="1055" height="413" alt="Screenshot 2026-02-19 194433" src="https://github.com/user-attachments/assets/8b605861-48bb-4c6a-a43f-7147cd2d61c0" />
+
+The downside is that you can’t scroll up to the previous command, nor can you copy and paste any code or CLI inside. You need to type manually. Actually, you can. Just type: `bash`
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
