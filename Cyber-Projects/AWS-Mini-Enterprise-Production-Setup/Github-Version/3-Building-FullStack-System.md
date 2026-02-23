@@ -3,13 +3,13 @@ We can test 2 approaches:
 - HTML & CSS (Frontend), Node.js (Backend)
 - React.js (Frontend) & Node.js (Backend) – (Abandon)
 
-We test the first approach first, then we can swap the approach 1 frontend with the approach 2 frontend (React.js).
+We test the first approach first, then we can swap the approach 1 frontend with the approach 2 frohttps://github.com/MJeat/Documentation/blob/main/Cyber-Projects/AWS-Mini-Enterprise-Production-Setup/Github-Version/3-Building-FullStack-System.mdntend (React.js).
 
 ==================================================================
 
 # Review System Info
 - Nginx acts as a Reverse Proxy in the Public Subnet to handle incoming traffic, while Apache2 runs the Backend API in the Private Subnet. The backend communicates with RDS MySQL and uses a NAT Gateway for outbound updates.
-Proxy Typesf
+## Proxy Types
 
 In my setup, I actually have two different types of proxies working for different reasons:
 - The Reverse Proxy (Nginx/Apache): * Likely sitting on your Backend EC2 instance.
@@ -283,8 +283,9 @@ server_name _;
                 proxy_set_header X-Real-IP $remote_addr;
                 proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
         }
-Save & exit. Then:
 ```
+Save & exit. Then:
+
 Follow by:
 ```
 sudo chown www-data:www-data /var/www/html/index.html
@@ -292,11 +293,13 @@ sudo chmod 644 /var/www/html/index.html
 ```
 Then, open the public instance IP. 
 **Result:**
+
 <br><img width="1410" height="634" alt="Screenshot 2026-02-10 210822" src="https://github.com/user-attachments/assets/949e681d-a774-4e58-9c68-278f61e41f15" />
 
 # Reasons Approach #1:
 **Why are we using express, aws sdk, and mysql2 here?**
 When you're building a professional application, you don't want to "reinvent the wheel." These three libraries are the industry-standard "tools" that allow your Node.js code to talk to the outside world. Think of Node.js as the engine of a car. It provides the power, but it doesn't have a steering wheel, seats, or a GPS. These libraries provide those parts:
+
 **1. Express (The "Steering Wheel" & "Dashboard")**
 - Why? Pure Node.js is very difficult to use for web servers. If you used pure Node, you would have to manually write code to figure out if a user is visiting /upload or /delete, and manually parse every chunk of data they send.
 - What it does: It provides Routing. It allows you to simply say app.get('/search', ...) or app.post('/upload', ...). It makes your code readable and organized.
@@ -314,6 +317,7 @@ When you're building a professional application, you don't want to "reinvent the
 
 # Issue – Nginx Configuration
 <br> There was a time when these issues appeared. It was miserable. It took me about 3 days + 1 day of building the MySQL service to use it locally, mimicking this project, which is on the cloud. The issue has to do with the nginx configuration.
+
 <br> <img width="893" height="329" alt="Screenshot 2026-02-10 214257" src="https://github.com/user-attachments/assets/dcedb129-534b-4968-bec0-28e4ef368e5e" />
 <img width="732" height="211" alt="Screenshot 2026-02-10 214725" src="https://github.com/user-attachments/assets/aef28793-2b2a-4659-8240-74426c4208f0" />
 
@@ -353,10 +357,11 @@ server {
 curl http://10.0.2.37:3000/api/files
 ```
 If it shows “[]”, it means:
-✅ Backend is working
-✅ Private EC2 reachable
-✅ Node is running
-✅ Security group is already allowing traffic
+- ✅ Backend is working
+- ✅ Private EC2 reachable
+- ✅ Node is running
+- ✅ Security group is already allowing traffic
+
 So your infrastructure is fine. Your problem is 100% NGINX config.
 
 Make sure that these two are correctly communicating and programmed. 
@@ -368,14 +373,16 @@ Make sure the Private Instance inbound rule is set to:
 - Source: Public Instance EC2 SG (Reverse Proxy)
 
 <br><img width="1914" height="747" alt="Screenshot 2026-02-14 113818" src="https://github.com/user-attachments/assets/ac5237a7-5038-41bc-9123-fa213ab4f909" />
+
 Without this security group, no logs or error logs will appear in S3, server.js, and the browser developer console. This is the fixed result.
+
 <br> <img width="1652" height="661" alt="Screenshot 2026-02-14 113548" src="https://github.com/user-attachments/assets/e8fc119c-eed6-4615-8136-f643aad1b1b9" />
 
 
 # Result #1:
 - Status: Success
 After uploading a file:
-<br> ![Uploading Screenshot 2026-02-14 114529.png…]()
+<br> <img width="1919" height="1025" alt="Screenshot 2026-02-14 114529" src="https://github.com/user-attachments/assets/0783bc9b-d1a9-481b-a009-28e355e27c33" />
 <img width="376" height="181" alt="Screenshot 2026-02-14 114550" src="https://github.com/user-attachments/assets/48f58cce-f072-42da-9351-d5fd9bbc173b" />
 
 ## Check with S3:
@@ -429,7 +436,7 @@ Environment=NODE_ENV=production
 [Install]                                                                                                                                                                                                     
 WantedBy=multi-user.target     
 ```
-<br> <img width="1193" height="428" alt="Screenshot 2026-02-16 125212" src="https://github.com/user-attachments/assets/d3dc30b3-1fb1-4b86-b598-b29fb7b9c23b" />
+<br> <img width="1387" height="509" alt="Screenshot 2026-02-16 124622" src="https://github.com/user-attachments/assets/b33cfc63-2bfd-4f35-8671-b2c254da5f9d" />
 
 Save & Exist, then:
 ```
@@ -440,10 +447,11 @@ sudo systemctl status myscript.service
 <br> <img width="1153" height="562" alt="Screenshot 2026-02-16 125339" src="https://github.com/user-attachments/assets/8d82ce84-a209-48eb-8611-06b06c869257" />
 
 
-In real production, you should save the script files and their modules in the /opt directory. This directory is for hosting servers. Make sure you create another directory to store the server files. In this case, we created a server/ directory. 
+In real production, you should save the script files and their modules in the /opt directory. This directory is for hosting servers. Make sure you create another directory to store the server files. In this case, we created a server/ directory. <br>
 **Note: You may need to do your own research, as this might flag errors.**
 
 You can create a new server.js or move it into the /opt directory. 
+
 **Moving Method:**
 ```
 sudo mv ~/company-api/package.json /opt/server/
