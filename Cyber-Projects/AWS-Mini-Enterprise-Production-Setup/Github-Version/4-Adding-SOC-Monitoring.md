@@ -608,9 +608,69 @@ docker ps
 Should show elasticsearch and kibana containers with status "healthy"
 
 
+### 2.11.1. AWS CLI
+- Source: [Link](https://docs.aws.amazon.com/cli/latest/userguide/getting-started-install.html)
+- Additional: [Link](https://www.youtube.com/watch?v=nt6NTWQ-h6o)
+
+On your OWN laptop, open CMD as admin and install both AWS CLI and SSM plugin. <br>
+Verification: `aws --version`
+
+### 2.11.2. Session Manager CLI – SSM Plugin
+
+On your OWN laptop, open CMD as admin:
+- Installation: [Link](https://docs.aws.amazon.com/systems-manager/latest/userguide/install-plugin-windows.html)
+- Verification: [Link](https://docs.aws.amazon.com/systems-manager/latest/userguide/install-plugin-verify.html)
+- Verification: `session-manager-plugin`
+
+### 2.11.3. AWS Login
+
+In the same terminal, type: `aws login` <br>
+This will give you a secure tunnel to access 
+
+Then, open PowerShell,
+
+```
+aws ssm start-session `
+  --target <YOUR_SOC_INSTANCE_ID> `
+  --document-name AWS-StartPortForwardingSession `
+  --parameters "portNumber=5601,localPortNumber=5601" `
+  --region <YOUR_REGION>
+```
+
+You should see something like this after running the script above:
+
+<img width="338" height="190" alt="Screenshot 2026-02-21 120618" src="https://github.com/user-attachments/assets/ae039617-f6d0-4b9e-b232-13415646adac" />
 
 
+Next, go to your favorite browser and type:
+```http://localhost:5601```
 
+Enter your credentials from the Elastic Setup – Elastic Credential part at the top of this document.
+Result:
 
+<img width="1822" height="969" alt="Screenshot 2026-02-21 120529" src="https://github.com/user-attachments/assets/9f2a71e1-3128-469c-a9ca-00d7c20cd8c1" />
+
+You can double-check in the SSM console:
+
+<img width="1462" height="309" alt="Screenshot 2026-02-22 115134" src="https://github.com/user-attachments/assets/18361ea8-e395-44fe-aa4d-ceb3adf67e8f" />
+
+## 2.12. WebUI Elastic Setup
+### 2.12.1. Add Fleet Server
+
+We need to add a fleet server to our own SOC platform instance. Go to the search bar of the web and search for Fleet. Go to Settings.
+
+**🛠️ Step 1: Add the Fleet Server**
+1. Click that "Add Fleet Server" button.
+2. Name: Type SOC-Fleet-Server.
+3. URL: This is where you must use your SOC Instance's Private IP (the 10.x.x.x one from your AWS console).
+  4. Type: https://<YOUR-SOC-PRIVATE-IP>:8220
+5. Click "Generate Service Token" or “Generate Policy”.
+6. Check your SOC instance machine’s spec because you need to choose the machine type:
+  7. In your SSM SOC instance, type: hostnamectl
+  8. Look at the Architecture row.
+
+<img width="610" height="396" alt="Screenshot 2026-02-21 123658" src="https://github.com/user-attachments/assets/1bad06cd-58ec-4a7f-99a4-433f05d8d60e" />
+
+The Command: Elastic will give you a long command that looks like a curl and sudo ./elastic-agent install. Copy this command.
 
 
