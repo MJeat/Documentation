@@ -1088,8 +1088,8 @@ While still editing that same AWS integration, look for these two specific toggl
 
 ==============================================
 ## 2.15. Confirmation – AWS Integration Results:
-These are the policies to be made. The aws-soc-monitor is our main integration using the Fleet Server as its Policy. 
-The aws-rds-general-logs-monitor is using the same concepts as the aws-soc-monitor. However, it has only 1 selected log, which is Collect logs from CloudWatch – this is to collect logs from MySQL Database – General Logs.
+These are the policies to be made. The ``aws-soc-monitor`` is our main integration using the Fleet Server as its Policy. 
+The ``aws-rds-general-logs-monitor`` is using the same concepts as the aws-soc-monitor. However, it has only 1 selected log, which is Collect logs from CloudWatch – this is to collect logs from MySQL Database – General Logs.
 
 <img width="1747" height="637" alt="Screenshot 2026-02-21 231201" src="https://github.com/user-attachments/assets/d886bcd1-45ca-402a-bf8f-64804b7146f4" />
 
