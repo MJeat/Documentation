@@ -1,4 +1,4 @@
-<img width="998" height="308" alt="Screenshot 2026-02-03 211652" src="https://github.com/user-attachments/assets/fcd19edb-4799-48d4-b7d7-e51c5cb6b56a" /><img width="731" height="432" alt="Screenshot 2026-02-03 211450" src="https://github.com/user-attachments/assets/688d3f38-bc91-4fc9-a1dd-6b072f782d06" /># Goals:
+# Goals:
 - Use DB for metadata and fast searching
 - Use S3 mainly for uploaded files or attachments and for data backups.
 
