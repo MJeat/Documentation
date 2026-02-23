@@ -604,6 +604,7 @@ Check if both containers are healthy and active:
 `
 docker ps
 `
+
 Should show elasticsearch and kibana containers with status "healthy"
 
 
