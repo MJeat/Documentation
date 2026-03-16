@@ -17,4 +17,4 @@ On your computer, the keys are located in a hidden folder:
 
 - Path: ```C:\Users\User\.ssh```
 - Private Key: ```id_ed25519``` (This is your "password," keep it secret!)
-- Public Key: ```id_ed25519.pub``` (This is what you give to DigitalOcean)
+- Public Key: ```id_ed25519.pub``` (This is what you give to DigitalOcean. Just copy the entire line in the .pub file)
