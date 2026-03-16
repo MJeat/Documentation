@@ -1,5 +1,6 @@
-# Creating SSH Key in DigitalOcean
-
+# Project 01 — Personal VPS + Static IP + Domain Setup
+## Initializations:
+### Creating SSH Key in DigitalOcean
 In Tabby (Windows 11):
 - Create an SSH key (public & private) via CMD or PowerShell: ```ssh-keygen```
 - It will ask for the location, just copy-paste the option that it gives you.<br>
