@@ -46,7 +46,7 @@ On your computer, the keys are located in a hidden folder:
   - You don't need to take DigitalOcean nameservers unless you want to use DigitalOcean’s "App Platform" or certain automated "Load Balancer" features where DO needs to create DNS records for you automatically. For a standard Ubuntu Droplet with a Reserved IP, Cloudflare is the superior choice.
 
 
-
+# Project 02 — Nginx Reverse Proxy + HTTPS via Let's Encrypt
 
 
 
