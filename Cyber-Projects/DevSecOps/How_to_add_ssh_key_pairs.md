@@ -18,7 +18,7 @@ ssh-keygen -t rsa -b 4096 -C "your_email@example.com"
 
 2. When prompted for location, just copy the default location they give you, or you could just find your own location, but make sure to add the .pub file at the end.
 3. Passphrase is optional and is an additional protection
-4. Then, In CMD > ```type C:\Users\User\.ssh\{FILE-NAME}.pub```
+4. Then, In CMD > ```type C:\Users\User\.ssh\{FILE-NAME}.pub``` or File Explorer > Search Bar > `%USERPROFILE%\.ssh`
 - Example: `type C:\Users\User\.ssh\id_ed25519.pub`
 
 Where are they hiding? On your computer, the keys are located in a hidden folder:
@@ -38,6 +38,8 @@ Where are they hiding? On your computer, the keys are located in a hidden folder
 - If a black terminal opens: You are in! Now we just need to manually add your key.
 
 5.2. On your local Windows machine: 
+- Add the key in here to avoid permission denied (Publickey):
+File Explorer > Search Bar > ```%USERPROFILE%\.ssh``` 
 - Run this to see your Public Key
 ```
 ssh-keygen -y -f "YOUR-KEY.pem"
