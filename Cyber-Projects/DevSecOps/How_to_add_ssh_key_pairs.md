@@ -28,6 +28,7 @@ Where are they hiding? On your computer, the keys are located in a hidden folder
 - Public Key: `id_ed25519.pub` (This is what you give to your Instance. Just copy the entire line in the .pub file and paste into your instance .ssh/authorized_keys)
 
 5. If you were in AWS: <br>
+
 5.1. If you create a new keypair and haven't attached it to the instance yet:
 - Get and find the .pem you created
 - In the AWS Console, go to Instances.
