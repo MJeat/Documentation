@@ -54,5 +54,16 @@ nano ~/.ssh/authorized_keys
 - Paste your key on a new line, press Ctrl+O (Enter) to save, and Ctrl+X to exit.
 - Try your CMD/PowerShell SSH command again.
 
+## Known Hosts
+The "Known Hosts" (The "Memory")
 
+Whenever you connect to a new server and type "yes" to the "Are you sure you want to continue connecting?" prompt, SSH saves that server's fingerprint here. This prevents "Man-in-the-Middle" attacks.
 
+- Location: ```C:\Users\YOUR-LAPTOP-HOSTNAME\.ssh\known_hosts```
+
+How to open in Notepad:
+
+- Open Notepad.
+- Click File > Open.
+- Paste this: %USERPROFILE%\.ssh\known_hosts
+- It will look like a bunch of random gibberish (IP addresses followed by long keys). If you ever get an "Offending key" error, this is the file you edit to delete the line with that IP.
