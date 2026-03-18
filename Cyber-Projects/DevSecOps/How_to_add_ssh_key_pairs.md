@@ -42,7 +42,7 @@ Where are they hiding? On your computer, the keys are located in a hidden folder
 ```
 ssh-keygen -y -f "YOUR-KEY.pem"
 ```
-- Copy that long string it spits out (starts with ssh-rsa or ssh-ed25519).
+- Copy EVERYTHING from that long string it spits out (starts with ssh-rsa or ssh-ed25519).
 
 5.3. In your Instance Terminal: 
 - Type:
