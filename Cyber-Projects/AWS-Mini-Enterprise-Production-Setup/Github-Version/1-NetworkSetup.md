@@ -80,6 +80,8 @@ Outbound:
 _(from Private instance)_
 <br><img width="1917" height="727" alt="Screenshot 2026-01-26 203021" src="https://github.com/user-attachments/assets/304f34ff-b8d5-49b9-bb3a-36bb0c24d508" />
 
+(In this case, the public instance already has a key pair and is accessible via your local PC/Laptop)
+
 Next, from your laptop, copy the .pem SSH key from your laptop to the public instance so that the public instance can talk to the private instance via SSH. Your personal laptop cannot SSH to the private instance because you are not in the same VPC.
 _(from your Windows Terminal)_
 <br><img width="1171" height="172" alt="Screenshot 2026-01-26 202838" src="https://github.com/user-attachments/assets/04680bcf-6cd8-42f1-bd8e-7d4515cde98b" />
