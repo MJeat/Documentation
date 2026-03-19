@@ -55,8 +55,6 @@ Vibe coded via Claude AI. It is stored in the `/var/www/html/`
 I tested using the default version in the /etc/nginx/sites-available/default. It works fine. But, what if I want to create a new file in the future from scratch?
 You should never delete the default file. It’s the ultimate "cheat sheet"—if you ever forget how to write a specific line, you can just cat the default file to see how it's done.
 
-Here is the exact "Professional Beginner" way to start from scratch without breaking anything:
-
 1. "Deactivate" the default site (Without deleting)
 Nginx only runs files that are inside sites-enabled. To turn off the default site, just remove the shortcut (symlink), not the actual file.
 
