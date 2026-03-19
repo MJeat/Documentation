@@ -55,7 +55,13 @@ Vibe coded via Claude AI. It is stored in the `/var/www/html/`
 I tested using the default version in the /etc/nginx/sites-available/default. It works fine. But, what if I want to create a new file in the future from scratch?
 You should never delete the default file. It’s the ultimate "cheat sheet"—if you ever forget how to write a specific line, you can just cat the default file to see how it's done.
 
-1. "Deactivate" the default site (Without deleting)
+1. Create .html file
+- Go to /var/www/html/
+- ```nano my-learning.html```
+- Paste your .html code here & CTRL+S & CTRL+X
+
+
+2. "Deactivate" the default site (Without deleting)
 Nginx only runs files that are inside sites-enabled. To turn off the default site, just remove the shortcut (symlink), not the actual file.
 
 ### Remove the shortcut to deactivate the default site
@@ -65,7 +71,7 @@ sudo rm /etc/nginx/sites-enabled/default
 
 Note: The original file still lives safely in `/etc/nginx/sites-available/default`.
 
-2. Create your new config from scratch
+3. Create your new config from scratch
 
 Now, create a brand new file in sites-available. Let’s call it my-learning.conf.
 
@@ -75,14 +81,14 @@ sudo nano /etc/nginx/sites-available/my-learning.conf
 
 Then, go write something you want in that file.
 
-3. "Activate" your new site
+4. "Activate" your new site
 
 To tell Nginx to start using this file, you create a Symbolic Link (a shortcut) from sites-available to sites-enabled.
 
 ```
 sudo ln -s /etc/nginx/sites-available/my-learning.conf /etc/nginx/sites-enabled/
 ```
-4. The "Safety Check" (Don't skip this!)
+5. The "Safety Check" (Don't skip this!)
 
 Before you apply the changes, always ask Nginx if you made a typo.
 
@@ -91,7 +97,7 @@ sudo nginx -t
 ```
 If it says "syntax is ok" and "test is successful," you are golden.
 
-5. Reload Nginx
+6. Reload Nginx
 Instead of restart, use reload. This keeps the server running but swaps out the "brain" (the config).
 ```
 sudo systemctl reload nginx
