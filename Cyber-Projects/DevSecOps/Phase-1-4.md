@@ -128,16 +128,16 @@ In a standard setup, Cloudflare acts as a translator. If your server only speaks
 
 Since your Nginx is only listening on Port 80, this will be an expected error
 
-<img width="1147" height="453" alt="image" src="https://github.com/user-attachments/assets/fe4ebfb6-39b8-41c6-a3c9-2f55b0254723" />
+<img width="800" height="300" alt="image" src="https://github.com/user-attachments/assets/fe4ebfb6-39b8-41c6-a3c9-2f55b0254723" />
 
 You must tell Cloudflare not to look for an SSL certificate on your server.
 - Log in to Cloudflare.
 - Go to SSL/TLS -> Overview.
 - Change the encryption mode to Flexible.
 
-<img width="837" height="532" alt="image" src="https://github.com/user-attachments/assets/1f8fc225-1ebb-4bd9-9a70-a282f7be0381" />
+<img width="637" height="332" alt="image" src="https://github.com/user-attachments/assets/1f8fc225-1ebb-4bd9-9a70-a282f7be0381" />
 
-- This means: Browser -> (HTTPS) -> Cloudflare -> (HTTP) -> Your Server.
+- This means: `Browser -> (HTTPS) -> Cloudflare -> (HTTP) -> Your Server.`
 - Wait 60 seconds.
 - Try your domain again. It should now render perfectly!
 
