@@ -103,8 +103,24 @@ Instead of restart, use reload. This keeps the server running but swaps out the 
 sudo systemctl reload nginx
 ```
 
+### 2.1. Nginx - Index File
+There's a difference when you store the file in ``/var/www/html``versus in other internal servers, such as Docker containers. You have to write the sites-available/ differently. In this point, we will talk about when storing in `/var/www/html`
 
+This is how you need to write in the `my-learning.conf` file:
+```
+server {
+        listen 80 default_server;
+        listen [::]:80 default_server;  # tells the server to accept IPv6 HTTP traffic on port 80
+        server_name _;  # This you’ve told Nginx: "I don't have a domain yet, so just show this to anyone who types my Server IP into their browser."
 
+        root /var/www/html;  # This is the point   
+        index my-learning.html;    # This is the point
+
+        location / {
+                try_files $uri $uri/ =404;
+        }
+}
+```
 
 
 
