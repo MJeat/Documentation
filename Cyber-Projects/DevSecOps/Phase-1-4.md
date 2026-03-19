@@ -122,8 +122,26 @@ server {
 }
 ```
 
+### 2.2. Nginx - Subdomain/Domain Name
 
+In a standard setup, Cloudflare acts as a translator. If your server only speaks HTTP (Port 80) but Cloudflare is trying to speak HTTPS (Port 443), the translation fails, and your browser gets confused (hence the "Unsafe attempt" and "Host Error").
 
+Since your Nginx is only listening on Port 80, this will be an expected error
+
+<img width="1147" height="453" alt="image" src="https://github.com/user-attachments/assets/fe4ebfb6-39b8-41c6-a3c9-2f55b0254723" />
+
+You must tell Cloudflare not to look for an SSL certificate on your server.
+- Log in to Cloudflare.
+- Go to SSL/TLS -> Overview.
+- Change the encryption mode to Flexible.
+
+<img width="837" height="532" alt="image" src="https://github.com/user-attachments/assets/1f8fc225-1ebb-4bd9-9a70-a282f7be0381" />
+
+- This means: Browser -> (HTTPS) -> Cloudflare -> (HTTP) -> Your Server.
+- Wait 60 seconds.
+- Try your domain again. It should now render perfectly!
+
+However, you should eventually move to Port 443. While "Flexible" works, it's not the "Pro" way because the data between Cloudflare and your server is unencrypted. To go "Full Strict" (the gold standard), you need Nginx to listen on Port 443.
 
 
 
