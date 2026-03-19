@@ -123,6 +123,25 @@ server {
 ```
 
 ### 2.2. Nginx - Subdomain/Domain Name
+To set up a domain name:
+- Go to your preferred CloudFlare Domain Records
+- Create (Record: A, Name: {YOUR-SUBDOMAIN-NAME}, Proxies ON) > Save <br>
+Next, you should have this in your my-learning.conf:
+```
+server {
+        listen 80 default_server;
+        listen [::]:80 default_server; # IPv6
+        server_name YOUR-SUBDOMAIN-NAME;       
+
+        root /var/www/html;     
+        index tasks.html;
+
+        location / {
+                add_header Content-Security-Policy "upgrade-insecure-requests";   # Add a special header that tells the browser to automatically treat every request as secure. This often solves the "Unsafe attempt" error.
+                try_files $uri $uri/ =404;
+        }
+}
+```
 
 In a standard setup, Cloudflare acts as a translator. If your server only speaks HTTP (Port 80) but Cloudflare is trying to speak HTTPS (Port 443), the translation fails, and your browser gets confused (hence the "Unsafe attempt" and "Host Error").
 
