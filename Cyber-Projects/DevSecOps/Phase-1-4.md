@@ -170,6 +170,7 @@ The `Not Secure` sites have HTTP/1.1
 
 <img width="391" height="180" alt="image" src="https://github.com/user-attachments/assets/c08c1082-46da-4e98-82cd-2aa0199202d5" />
 
+<br>
 
 **This is what the `Secure` web looks like using:**
 ```
@@ -177,6 +178,9 @@ curl -I {DOMAIN-NAME}
 ```
 The `Secure` sites have HTTP/2
 
+<img width="894" height="286" alt="image" src="https://github.com/user-attachments/assets/731464ce-d8a2-44d7-92f8-b966e6518396" />
+
+### 2.3. Nginx - Adding Letsencrypt & CloudFlare Full SSL/TLS
 
 
 ### 2.?. Nginx - Internal Server Files
