@@ -182,9 +182,51 @@ The `Secure` sites have HTTP/2
 
 ### 2.3. Nginx - Adding Letsencrypt & CloudFlare Full SSL/TLS
 
+
+
+
 This is the output from setting up Certbot and LetsEncrypt:
 
 <img width="784" height="350" alt="image" src="https://github.com/user-attachments/assets/8222e12c-3566-489f-9d2c-b086a2fda246" />
+
+Check your tasks.conf (updated version):
+```
+server { # IPv6
+        server_name lovertasks.portfoliomkc.tech;       
+
+        root /var/www/html;     
+        index tasks.html;
+
+        location / {
+                add_header Content-Security-Policy "upgrade-insecure-requests";
+#               try_files $uri $uri/ =404;
+
+        }
+
+    listen [::]:443 ssl ipv6only=on; # managed by Certbot
+    listen 443 ssl; # managed by Certbot
+    ssl_certificate /etc/letsencrypt/live/lovertasks.portfoliomkc.tech/fullchain.pem; # managed by Certbot
+    ssl_certificate_key /etc/letsencrypt/live/lovertasks.portfoliomkc.tech/privkey.pem; # managed by Certbot
+    include /etc/letsencrypt/options-ssl-nginx.conf; # managed by Certbot
+    ssl_dhparam /etc/letsencrypt/ssl-dhparams.pem; # managed by Certbot
+
+}
+
+
+
+server {
+    if ($host = lovertasks.portfoliomkc.tech) {
+        return 301 https://$host$request_uri;
+    } # managed by Certbot
+
+
+        listen 80 default_server;
+        listen [::]:80 default_server;
+        server_name lovertasks.portfoliomkc.tech;
+    return 404; # managed by Certbot
+}
+```
+
 
 
 ### 2.?. Nginx - Internal Server Files
