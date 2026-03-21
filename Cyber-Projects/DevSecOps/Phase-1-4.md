@@ -279,7 +279,7 @@ sudo certbot certificates
 ```
 This will show you the Certificate Name (usually the domain itself). Note this down.
 
-2. The "Clean" Deletion
+2. The "Clean" Deletion <br>
 Don't just delete files manually with rm. Certbot has a built-in command that cleans up the certificate, the renewal settings, and the archive files all at once.
 ```
 sudo certbot delete --cert-name old.subdomain.com
