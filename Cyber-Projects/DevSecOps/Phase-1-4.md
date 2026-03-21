@@ -166,13 +166,18 @@ However, you should eventually move to Port 443. While "Flexible" works, it's no
 ```
 curl -I {PUBLIC-IP} 
 ```
+The `Not Secure` sites have HTTP/1.1
 
-<img width="491" height="229" alt="image" src="https://github.com/user-attachments/assets/c08c1082-46da-4e98-82cd-2aa0199202d5" />
+<img width="391" height="129" alt="image" src="https://github.com/user-attachments/assets/c08c1082-46da-4e98-82cd-2aa0199202d5" />
+
 
 **This is what the `Secure` web looks like using:**
 ```
 curl -I {DOMAIN-NAME}
 ```
+The `Secure` sites have HTTP/2
+
+
 
 ### 2.?. Nginx - Internal Server Files
 using Docker containers ...
