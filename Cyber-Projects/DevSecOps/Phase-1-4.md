@@ -168,7 +168,7 @@ curl -I {PUBLIC-IP}
 ```
 The `Not Secure` sites have HTTP/1.1
 
-<img width="391" height="129" alt="image" src="https://github.com/user-attachments/assets/c08c1082-46da-4e98-82cd-2aa0199202d5" />
+<img width="391" height="180" alt="image" src="https://github.com/user-attachments/assets/c08c1082-46da-4e98-82cd-2aa0199202d5" />
 
 
 **This is what the `Secure` web looks like using:**
