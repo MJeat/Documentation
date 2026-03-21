@@ -182,6 +182,10 @@ The `Secure` sites have HTTP/2
 
 ### 2.3. Nginx - Adding Letsencrypt & CloudFlare Full SSL/TLS
 
+This is the output from setting up Certbot and LetsEncrypt:
+
+<img width="784" height="350" alt="image" src="https://github.com/user-attachments/assets/8222e12c-3566-489f-9d2c-b086a2fda246" />
+
 
 ### 2.?. Nginx - Internal Server Files
 using Docker containers ...
