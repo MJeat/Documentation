@@ -294,7 +294,8 @@ Running the delete command wipes all of these safely.
 Now, you need to tell Nginx about the new name.
 - Open your config: sudo nano /etc/nginx/sites-available/tasks.conf
 - Change server_name: Update it to new.subdomain.com.
-- Remove the SSL lines: Since the old SSL files are gone, Nginx will fail to start if it tries to look for them. Delete (or comment out with #) the lines starting with listen 443, ssl_certificate, and include /etc/letsencrypt/....
+- Remove the SSL lines: Since the old SSL files are gone, Nginx will fail to start if it tries to look for them.
+- Delete (or comment out with #) the lines starting with listen 443, ssl_certificate, and include /etc/letsencrypt/....
 - Save and Reload: sudo nginx -t && sudo systemctl reload nginx
 
 4. Create the New Certificate
