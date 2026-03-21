@@ -178,7 +178,7 @@ curl -I {DOMAIN-NAME}
 ```
 The `Secure` sites have HTTP/2
 
-<img width="794" height="186" alt="image" src="https://github.com/user-attachments/assets/731464ce-d8a2-44d7-92f8-b966e6518396" />
+<img width="794" height="286" alt="image" src="https://github.com/user-attachments/assets/731464ce-d8a2-44d7-92f8-b966e6518396" />
 
 ### 2.3. Nginx - Adding Letsencrypt & CloudFlare Full SSL/TLS
 
