@@ -180,10 +180,47 @@ The `Secure` sites have HTTP/2
 
 <img width="794" height="286" alt="image" src="https://github.com/user-attachments/assets/731464ce-d8a2-44d7-92f8-b966e6518396" />
 
+
+
 ### 2.3. Nginx - Adding Letsencrypt & CloudFlare Full SSL/TLS
 
+To get your server ready for Cloudflare Full (Strict) mode, you need a "legit" certificate on your origin server (your DigitalOcean droplet).
 
+Here is the breakdown of the tools and the step-by-step guide to setting them up.
 
+1. What are these things? <br>
+Let's Encrypt: This is a non-profit Certificate Authority (CA). They are like a digital "Notary" that issues SSL certificates for free so the whole world can use HTTPS.
+
+**Certbot**: This is the Software Client. Since you don't want to manually copy-paste long encryption keys every 90 days, Certbot sits on your server and automatically talks to Let's Encrypt to fetch, install, and renew your certificates.
+
+2. Preparation: Open the Gates <br>
+Before running Certbot, make sure your firewall allows HTTPS traffic (Port 443).
+```
+sudo ufw allow 443/tcp
+sudo ufw reload
+```
+3. Install Certbot
+On Ubuntu, the most reliable way to install Certbot is using apt.
+
+```
+sudo apt update
+sudo apt install certbot python3-certbot-nginx -y
+```
+4. Run Certbot (The Magic Part)
+Certbot has a specific plugin for Nginx. It will read your /etc/nginx/sites-available/tasks.conf file, look for your server_name, and ask Let's Encrypt for a certificate for that specific domain.
+
+Run this command:
+
+```
+sudo certbot --nginx -d tasks.portfoliomkc.tech
+```
+(Replace tasks.portfoliomkc.tech with your actual subdomain)
+
+What happens next:
+- Email: It will ask for an email (for renewal warnings).
+- Terms: Press A to agree.
+- The Challenge: Certbot will put a temporary file on your server. Let's Encrypt will try to "ping" it. If it works, it proves you own the server.
+- The Config: Certbot will ask if you want to Redirect HTTP to HTTPS. Choose "2" (Redirect). This automatically updates your tasks.conf with all the SSL code.
 
 This is the output from setting up Certbot and LetsEncrypt:
 
@@ -192,7 +229,7 @@ This is the output from setting up Certbot and LetsEncrypt:
 Check your tasks.conf (updated version):
 ```
 server { # IPv6
-        server_name lovertasks.portfoliomkc.tech;       
+        server_name {DOMAIN-NAME};       
 
         root /var/www/html;     
         index tasks.html;
@@ -215,19 +252,56 @@ server { # IPv6
 
 
 server {
-    if ($host = lovertasks.portfoliomkc.tech) {
+    if ($host = {DOMAIN-NAME}) {
         return 301 https://$host$request_uri;
     } # managed by Certbot
 
 
         listen 80 default_server;
         listen [::]:80 default_server;
-        server_name lovertasks.portfoliomkc.tech;
+        server_name {DOMAIN-NAME};
     return 404; # managed by Certbot
 }
 ```
 
+Let's Encrypt certificates expire every 90 days. The good news? Certbot added a "timer" to your system the moment you installed it. You can test that the automatic renewal works by running:
+```
+sudo certbot renew --dry-run
+```
+If that says "Congratulations, all renewals succeeded," you never have to touch SSL again. It’s set-and-forget.
 
+#### When want to Change Old domain to New domain:
+
+1. Identify what you have <br>
+Before deleting anything, see exactly what Certbot is managing:
+```
+sudo certbot certificates
+```
+This will show you the Certificate Name (usually the domain itself). Note this down.
+
+2. The "Clean" Deletion
+Don't just delete files manually with rm. Certbot has a built-in command that cleans up the certificate, the renewal settings, and the archive files all at once.
+```
+sudo certbot delete --cert-name old.subdomain.com
+```
+Where are the files? Certbot stores them in /etc/letsencrypt/.
+- /live/: Active symlinks.
+- /archive/: The actual keys.
+- /renewal/: The configuration for auto-renewing. <br>
+Running the delete command wipes all of these safely.
+
+3. Update Nginx
+Now, you need to tell Nginx about the new name.
+- Open your config: sudo nano /etc/nginx/sites-available/tasks.conf
+- Change server_name: Update it to new.subdomain.com.
+- Remove the SSL lines: Since the old SSL files are gone, Nginx will fail to start if it tries to look for them. Delete (or comment out with #) the lines starting with listen 443, ssl_certificate, and include /etc/letsencrypt/....
+- Save and Reload: sudo nginx -t && sudo systemctl reload nginx
+
+4. Create the New Certificate
+Now that Nginx is "clean" and listening for the new name on Port 80, run Certbot again for the new subdomain:
+```
+sudo certbot --nginx -d new.subdomain.com
+```
 
 ### 2.?. Nginx - Internal Server Files
 using Docker containers ...
