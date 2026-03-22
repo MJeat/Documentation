@@ -372,6 +372,10 @@ sudo ufw enable
 **Step 4: Verify the "Red Team" Result** <br>
 Now, let's see what you’ve built:
 1. **The Firewall Status:** Run `sudo ufw status`. You should see a long list of Cloudflare IPs allowed on 80/443, and SSH allowed from anywhere.
+
+<img width="1019" height="849" alt="image" src="https://github.com/user-attachments/assets/65d7ac73-e65f-4b68-ae9f-3cde912b9ce1" />
+
+
 2. **The Test:** Go to your Kali Linux machine. Try to visit your server using the **IP address** directly (`http://[YOUR-IP]`).
    * **Result:** It should **time out**. You are now invisible to direct-to-IP attacks!
 3. **The Proxy Test:** Visit your site via the **Domain Name** (`https://tasks.portfoliomkc.tech`).
@@ -381,6 +385,12 @@ Now, let's see what you’ve built:
 - **No more Baidu Bots:** Since they hit your IP directly, they will now be blocked by the firewall before they even reach Nginx.
 - **No "Origin" Leaks:** Hackers can't scan your server for vulnerabilities (like that Nginx 1.24 version) because they can't establish a connection to your IP.
 - **DDoS Protection:** Cloudflare handles the "bad" traffic, and your server only talks to "good" Cloudflare nodes.
+
+<img width="915" height="477" alt="image" src="https://github.com/user-attachments/assets/c815e574-4c28-47e8-b93b-90e60ee458d5" />
+
+<img width="893" height="461" alt="image" src="https://github.com/user-attachments/assets/58133ed0-762a-48e4-99af-8619018009fa" />
+
+
 
 ### How to set up a "Cron Job" so your server automatically updates this IP list once a week? (Cloudflare rarely changes their IPs, but it's a "set it and forget it" pro move.)
 Setting up a Cron Job is the final step in making your server "self-healing." Since Cloudflare occasionally adds new data centers and IP ranges, this script will ensure your firewall stays updated without you having to lift a finger.
