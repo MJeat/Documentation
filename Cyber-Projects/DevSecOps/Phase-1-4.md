@@ -386,10 +386,9 @@ Now, let's see what you’ve built:
 - **No "Origin" Leaks:** Hackers can't scan your server for vulnerabilities (like that Nginx 1.24 version) because they can't establish a connection to your IP.
 - **DDoS Protection:** Cloudflare handles the "bad" traffic, and your server only talks to "good" Cloudflare nodes.
 
-<img width="915" height="477" alt="image" src="https://github.com/user-attachments/assets/c815e574-4c28-47e8-b93b-90e60ee458d5" />
+<img width="715" height="377" alt="image" src="https://github.com/user-attachments/assets/c815e574-4c28-47e8-b93b-90e60ee458d5" />
 
-<img width="893" height="461" alt="image" src="https://github.com/user-attachments/assets/58133ed0-762a-48e4-99af-8619018009fa" />
-
+<img width="693" height="361" alt="image" src="https://github.com/user-attachments/assets/58133ed0-762a-48e4-99af-8619018009fa" />
 
 
 ### How to set up a "Cron Job" so your server automatically updates this IP list once a week? (Cloudflare rarely changes their IPs, but it's a "set it and forget it" pro move.)
