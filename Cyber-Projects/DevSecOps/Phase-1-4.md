@@ -373,7 +373,7 @@ sudo ufw enable
 Now, let's see what you’ve built:
 1. **The Firewall Status:** Run `sudo ufw status`. You should see a long list of Cloudflare IPs allowed on 80/443, and SSH allowed from anywhere.
 
-<img width="1019" height="849" alt="image" src="https://github.com/user-attachments/assets/65d7ac73-e65f-4b68-ae9f-3cde912b9ce1" />
+<img width="519" height="349" alt="image" src="https://github.com/user-attachments/assets/65d7ac73-e65f-4b68-ae9f-3cde912b9ce1" />
 
 
 2. **The Test:** Go to your Kali Linux machine. Try to visit your server using the **IP address** directly (`http://[YOUR-IP]`).
