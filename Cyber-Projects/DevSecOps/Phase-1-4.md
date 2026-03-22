@@ -413,8 +413,8 @@ Code snippet
 0 3 * * 1 /usr/local/bin/sync_cf_ips.sh > /dev/null 2>&1
 ```
 What does this mean?
-- 0 3: Run at 3:00 AM.
-- * * 1: Every Monday.
+- `0 3`: Run at 3:00 AM.
+- `* * 1`: Every Monday.
 - `/usr/local/bin/sync_cf_ips.sh`: The path to your script.
 - `> /dev/null 2>&1`: This "silences" the script so it doesn't send you an internal system email every time it runs successfully.
 - Save and exit (Ctrl+O, Enter, Ctrl+X).
