@@ -304,8 +304,126 @@ Now that Nginx is "clean" and listening for the new name on Port 80, run Certbot
 sudo certbot --nginx -d new.subdomain.com
 ```
 
+
 ### 2.?. Nginx - Internal Server Files
 using Docker containers ...
+
+
+## 3. Prevent Bot Crawlers via CloudFlare & Nginx
+This is a high-level security move. By doing this, you are effectively "cloaking" your server. To the rest of the internet (and those Baidu bots), your server will simply look like it doesn't exist. Only Cloudflare will be allowed to "knock on the door."
+
+**⚠️ CRITICAL WARNING:** Before we start, we **must** allow SSH (Port 22). If you enable the firewall without allowing your own IP or SSH, you will be locked out of your DigitalOcean Droplet forever!
+
+**Step 1: Secure your SSH Access** <br>
+First, make sure the firewall won't kick you out.
+```
+sudo ufw allow ssh
+```
+
+---
+
+**Step 2: The Cloudflare Whitelist Script** <br>
+Cloudflare has a specific list of IP addresses they use. Instead of typing them one by one, we can use a small script to grab the latest list and allow them.
+
+Create a script file:
+```
+nano sync_cf_ips.sh
+```
+
+Paste this code into the file:
+```
+#!/bin/bash
+
+# Get the latest Cloudflare IPs
+CF_IPV4=$(curl -s https://www.cloudflare.com/ips-v4)
+CF_IPV6=$(curl -s https://www.cloudflare.com/ips-v6)
+
+# Allow Cloudflare IPv4s on 80 and 443
+for ip in $CF_IPV4; do
+    sudo ufw allow from $ip to any port 80
+    sudo ufw allow from $ip to any port 443
+done
+
+# Allow Cloudflare IPv6s on 80 and 443
+for ip in $CF_IPV6; do
+    sudo ufw allow from $ip to any port 80
+    sudo ufw allow from $ip to any port 443
+done
+
+echo "Cloudflare IPs have been whitelisted!"
+```
+
+Save and exit (`Ctrl+O`, `Enter`, `Ctrl+X`).
+
+---
+
+**Step 3: Run the Script and Enable UFW** <br>
+Now, make the script executable, run it, and turn on the firewall.
+
+```
+chmod +x sync_cf_ips.sh
+sudo ./sync_cf_ips.sh
+sudo ufw enable
+```
+*(When it asks "Command may disrupt existing ssh connections," type `y`. Since we ran `ufw allow ssh` earlier, you are safe.)*
+
+---
+
+**Step 4: Verify the "Red Team" Result** <br>
+Now, let's see what you’ve built:
+1. **The Firewall Status:** Run `sudo ufw status`. You should see a long list of Cloudflare IPs allowed on 80/443, and SSH allowed from anywhere.
+2. **The Test:** Go to your Kali Linux machine. Try to visit your server using the **IP address** directly (`http://[YOUR-IP]`).
+   * **Result:** It should **time out**. You are now invisible to direct-to-IP attacks!
+3. **The Proxy Test:** Visit your site via the **Domain Name** (`https://tasks.portfoliomkc.tech`).
+   * **Result:** It works perfectly! Cloudflare "passed" the firewall because it is on the whitelist.
+
+---
+- **No more Baidu Bots:** Since they hit your IP directly, they will now be blocked by the firewall before they even reach Nginx.
+- **No "Origin" Leaks:** Hackers can't scan your server for vulnerabilities (like that Nginx 1.24 version) because they can't establish a connection to your IP.
+- **DDoS Protection:** Cloudflare handles the "bad" traffic, and your server only talks to "good" Cloudflare nodes.
+
+### How to set up a "Cron Job" so your server automatically updates this IP list once a week? (Cloudflare rarely changes their IPs, but it's a "set it and forget it" pro move.)
+Setting up a Cron Job is the final step in making your server "self-healing." Since Cloudflare occasionally adds new data centers and IP ranges, this script will ensure your firewall stays updated without you having to lift a finger.
+
+**Step 1: Test the Script One Last Time** <br>
+Make sure your script is in a permanent location (like your home directory) and works without errors.
+
+# Move it to a safe spot if it's not already there
+```
+mv ~/sync_cf_ips.sh /usr/local/bin/sync_cf_ips.sh
+sudo chmod +x /usr/local/bin/sync_cf_ips.sh
+```
+
+Run it once to be sure
+```
+sudo /usr/local/bin/sync_cf_ips.sh
+```
+**Step 2: Open the Crontab** <br>
+The crontab is a list of commands that the system runs on a schedule. We want to run this as root so it has permission to modify the ufw firewall.
+```
+sudo crontab -e
+```
+(If it asks you to pick an editor, choose nano by pressing 1).
+
+**Step 3: Add the Schedule** <br>
+Scroll to the very bottom of the file and add this line:
+
+Code snippet
+```
+0 3 * * 1 /usr/local/bin/sync_cf_ips.sh > /dev/null 2>&1
+```
+What does this mean?
+- 0 3: Run at 3:00 AM.
+- * * 1: Every Monday.
+- `/usr/local/bin/sync_cf_ips.sh`: The path to your script.
+- `> /dev/null 2>&1`: This "silences" the script so it doesn't send you an internal system email every time it runs successfully.
+- Save and exit (Ctrl+O, Enter, Ctrl+X).
+
+**Step 4: Verify the Cron Job** <br>
+Check that your new job is listed:
+```
+sudo crontab -l
+```
 
 
 
