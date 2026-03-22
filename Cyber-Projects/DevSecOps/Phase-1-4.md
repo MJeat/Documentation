@@ -386,9 +386,7 @@ Now, let's see what you’ve built:
 Setting up a Cron Job is the final step in making your server "self-healing." Since Cloudflare occasionally adds new data centers and IP ranges, this script will ensure your firewall stays updated without you having to lift a finger.
 
 **Step 1: Test the Script One Last Time** <br>
-Make sure your script is in a permanent location (like your home directory) and works without errors.
-
-# Move it to a safe spot if it's not already there
+Make sure your script is in a permanent location (like your home directory) and works without errors. Move it to a safe spot if it's not already there
 ```
 mv ~/sync_cf_ips.sh /usr/local/bin/sync_cf_ips.sh
 sudo chmod +x /usr/local/bin/sync_cf_ips.sh
