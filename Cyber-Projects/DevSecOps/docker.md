@@ -111,11 +111,11 @@ After building the images from the Dockerfile:
 
 ### In Browser
 1. In AWS or DigitalOcean
-You need to configure 2 inbound rules your firewall:
+You need to configure 2 inbound rules in your firewall:
 - Custom TCP
 - Range: 8080
 - 0.0.0.0/0 (Anywhere)
-
+Another rule: 
 - Custom TCP
 - Range: 5001
 - 0.0.0.0/0 (Anywhere)
