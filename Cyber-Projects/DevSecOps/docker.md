@@ -61,7 +61,7 @@ app.listen(PORT, () => {
 ```
 
 ### Backend Dockerfile
-Location: `./docker-app/backend/Dockerfile`
+Location: `./docker-app/backend/`
 Run:
 ```
 sudo apt npm install -y
