@@ -83,11 +83,18 @@ Then, go write something you want in that file.
 
 4. "Activate" your new site
 
-To tell Nginx to start using this file, you create a Symbolic Link (a shortcut) from sites-available to sites-enabled.
+To tell Nginx to start using this file, you create a Symbolic Link (a shortcut) from sites-available to sites-enabled. 
 
 ```
 sudo ln -s /etc/nginx/sites-available/my-learning.conf /etc/nginx/sites-enabled/
 ```
+
+MAKE SURE IT'S AN ABSOLUTE PATH. The command below is incorrect:
+```
+sudo ln -s my-learning.conf /etc/nginx/sites-enabled/
+```
+
+
 5. The "Safety Check" (Don't skip this!)
 
 Before you apply the changes, always ask Nginx if you made a typo.
@@ -305,8 +312,14 @@ sudo certbot --nginx -d new.subdomain.com
 ```
 
 
-### 2.?. Nginx - Internal Server Files
-using Docker containers ...
+### 2.4. Nginx - Internal Server Files (Host's Nginx + Docker Containers)
+This part will set up nginx separately from Docker's compose files and Dockerfiles.
+
+```
+
+```
+
+
 
 
 ## 3. Prevent Bot Crawlers via CloudFlare & Nginx
