@@ -7,7 +7,7 @@ mkdir frontend backend
 ```
 
 ### Frontend:
-Location: `./docker-app/frontend`
+Location: `./docker-app/frontend/index.html`
 
 ```
 <!DOCTYPE html>
@@ -42,7 +42,7 @@ EXPOSE 80
 ```
 
 ### Backend:
-Location: `./docker-app/backend`
+Location: `./docker-app/backend/server.js`
 ```
 const express = require('express');
 const cors = require('cors');
