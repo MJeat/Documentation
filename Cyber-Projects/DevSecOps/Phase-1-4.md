@@ -345,27 +345,32 @@ For more info on what the difference is between using:
 Please refer to this [Documentation](https://github.com/MJeat/Documentation/blob/main/Cyber-Projects/DevSecOps/difference-nginx-docker.md)
 
 In this part, we are only going to cover the 3rd point.
+
+This is the `docker-app/nginx/nginx.conf`
 ```
 server {
-    listen 80;
-    server_name {YOUR-DOMAIN-NAME};
+        listen 80 default_server;
+        listen [::]:80 default_server;
 
-    # 1. The Frontend
-    location / {
-        proxy_pass http://frontend-system:80;
-        proxy_set_header Host $host;
-    }
+        server_name dockerweb.portfoliomkc.tech;
 
-    # 2. The Backend API
-    location /api/ {
-        proxy_pass http://backend-system:5000/;
-        proxy_set_header Host $host;
-    }
+        location / {
+                proxy_pass http://frontend:80;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+
+        }
+
+        location /api {
+                proxy_pass http://backend:5000;
+                proxy_set_header Host $host;
+                proxy_set_header X-Real-IP $remote_addr;
+        }
 }
 ```
 
 - The `location /` means that if the user types anything else and includes `/api/`, it will direct the user to the frontend container.
-- In the `proxy_pass` of both frontend and backend, we can see that these system names are actually the container's name.
+- In the `proxy_pass` of both frontend and backend, we can see that these service names are actually what we defined in the `yml` file.
 **How Docker "Finds" the Services**
 
 When you put containers in the same `docker-compose.yml`, Docker automatically creates a **Virtual Private Network**.
@@ -397,6 +402,8 @@ If you refused to use service/container names, your only other options would be:
 
 By using the **service name**, your config becomes truly **portable** — it works on your laptop, on AWS, or even on a giant supercomputer without changing a single line.
 
+
+This is
 
 
 
