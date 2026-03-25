@@ -345,9 +345,59 @@ For more info on what the difference is between using:
 Please refer to this [Documentation](https://github.com/MJeat/Documentation/blob/main/Cyber-Projects/DevSecOps/difference-nginx-docker.md)
 
 In this part, we are only going to cover the 3rd point.
+```
+server {
+    listen 80;
+    server_name {YOUR-DOMAIN-NAME};
 
+    # 1. The Frontend
+    location / {
+        proxy_pass http://frontend-system:80;
+        proxy_set_header Host $host;
+    }
 
+    # 2. The Backend API
+    location /api/ {
+        proxy_pass http://backend-system:5000/;
+        proxy_set_header Host $host;
+    }
+}
+```
 
+- The `location /` means that if the user types anything else and includes `/api/`, it will direct the user to the frontend container.
+- In the `proxy_pass` of both frontend and backend, we can see that these system names are actually the container's name.
+**How Docker "Finds" the Services**
+
+When you put containers in the same `docker-compose.yml`, Docker automatically creates a **Virtual Private Network**.
+
+- Inside this network, every container gets its own internal IP address (e.g., `172.18.0.3`).
+- **The Problem**: These IPs change every single time you restart Docker.
+- **The Solution**: Docker runs a tiny DNS server. It maps the **Service Name** (like `backend-system`) to whatever the current internal IP is.
+
+> If you changed it to `proxy_pass http://localhost:5000`, it would fail.  
+> Why? Because inside the Nginx container, `localhost` means **the Nginx container itself**. It would look for the backend inside its own tiny box, find nothing, and return a **502 Bad Gateway**.
+
+**Service Name vs. Container Name**
+There is a small but important distinction:
+
+- **Service Name**: The name you define in `docker-compose.yml` under the service (e.g., `backend:`).
+- **Container Name**: The name you set under `container_name:` (e.g., `backend-system`).
+
+Docker allows you to use **either** as the hostname in your `proxy_pass`. However, it is standard practice to use the **Service Name** because it’s the most permanent and reliable identifier in the Compose file.
+
+**What if you didn't want to use the names?**
+
+If you refused to use service/container names, your only other options would be:
+
+1. Expose the ports to the host (like we did in the "Hybrid" setup).
+2. Use the AWS Private IP of your host machine:  
+   `proxy_pass http://172.31.45.246:5001`.
+
+**The Downside**: If your AWS IP changes, or you move to a new server, your Nginx config breaks.
+
+By using the **service name**, your config becomes truly **portable** — it works on your laptop, on AWS, or even on a giant supercomputer without changing a single line.
+
+ 
 
 ## 3. Prevent Bot Crawlers via CloudFlare & Nginx
 This is a high-level security move. By doing this, you are effectively "cloaking" your server. To the rest of the internet (and those Baidu bots), your server will simply look like it doesn't exist. Only Cloudflare will be allowed to "knock on the door."
