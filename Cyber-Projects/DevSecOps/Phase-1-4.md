@@ -397,6 +397,11 @@ If you refused to use service/container names, your only other options would be:
 
 By using the **service name**, your config becomes truly **portable** — it works on your laptop, on AWS, or even on a giant supercomputer without changing a single line.
 
+
+
+
+
+
  
 
 ## 3. Prevent Bot Crawlers via CloudFlare & Nginx
