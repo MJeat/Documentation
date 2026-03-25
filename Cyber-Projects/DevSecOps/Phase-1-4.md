@@ -335,12 +335,17 @@ Third, start your containers and go to the browser, type: `{YOUR-PUBLIC-IP}:8080
 
 Additionally, you can configure SSL here, but I chose not to.
 
-### 2.5. Nginx - Everything in Docker Containers
+### 2.5. Nginx - Everything in Docker Containers (Modern Configuration)
 
 For more info on what the difference is between using:
-- 
+- nginx in host + index.html in host,
+- nginx in host + full stack in Docker containers,
+- nginx (like nginx.conf) and full stacks are all in containers
 
-Please refer to this [Documentation]()
+Please refer to this [Documentation](https://github.com/MJeat/Documentation/blob/main/Cyber-Projects/DevSecOps/difference-nginx-docker.md)
+
+In this part, we are only going to cover the 3rd point.
+
 
 
 
