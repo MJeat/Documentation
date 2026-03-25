@@ -352,7 +352,7 @@ server {
         listen 80 default_server;
         listen [::]:80 default_server;
 
-        server_name dockerweb.portfoliomkc.tech;
+        server_name {YOUR-DOMAIN-NAME};
 
         location / {
                 proxy_pass http://frontend:80;
@@ -403,13 +403,135 @@ If you refused to use service/container names, your only other options would be:
 By using the **service name**, your config becomes truly **portable** — it works on your laptop, on AWS, or even on a giant supercomputer without changing a single line.
 
 
-This is
+Next, update `docker-compose.yml`:
+```
+services:
+  nginx:
+    image: nginx:alpine
+    container_name: nginx-system
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443" # Opened for HTTPS
+    volumes:
+      - ./nginx/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+      - ./certbot/conf:/etc/letsencrypt # Where certs live
+      - ./certbot/www:/var/www/certbot   # Where the challenge lives
+    depends_on:
+      - frontend
+      - backend
 
+  backend:
+    build: ./backend
+    container_name: backend-system
+    # In "Pure Docker", we don't need ports here! Nginx handles it.
 
+  frontend:
+    build: ./frontend
+    container_name: frontend-system
+```
 
+Then, followed by:
+```
+docker compose up -d
+```
 
+Next, run the Temporary Certbot Container to get the SSL certificate from the Let's Encrypt server.
+Now we run the "one-time" robot that talks to Let's Encrypt. Run this from your `~/docker-app` folder:
 
- 
+```
+docker run --rm -it \
+  -v "$(pwd)/certbot/conf:/etc/letsencrypt" \
+  -v "$(pwd)/certbot/www:/var/www/certbot" \
+  certbot/certbot certonly --webroot \
+  -w /var/www/certbot -d {YOUR-DOMAIN-NAME} \
+  --email your-email@example.com --agree-tos --no-eff-email
+```
+
+Success Check: If it says "Successfully received certificate," your keys are now sitting safely in your `./certbot/conf` folder on your Ubuntu host.
+
+Then, switch to HTTPS.
+Update `nginx/nginx.conf` one last time:
+```
+server {
+    listen 80;
+    server_name {YOUR-DOMAIN-NAME};
+    return 301 https://$host$request_uri; # Force everyone to HTTPS
+}
+
+server {
+    listen 443 ssl;
+    server_name {YOUR-DOMAIN-NAME};
+
+    # Path inside the container (mapped via the volume)
+    ssl_certificate /etc/letsencrypt/live/dockerweb.portfoliomkc.tech/fullchain.pem;
+    ssl_certificate_key /etc/letsencrypt/live/dockerweb.portfoliomkc.tech/privkey.pem;
+
+    location / {
+        proxy_pass http://frontend-system:80;
+        proxy_set_header Host $host;
+    }
+
+    location /api {
+        proxy_pass http://backend-system:5000;
+        proxy_set_header Host $host;
+    }
+}
+```
+Finally:
+```
+docker compose restart nginx
+```
+
+### Explanation:
+When you run this:
+```
+docker run --rm -it \
+  -v "$(pwd)/certbot/conf:/etc/letsencrypt" \
+  -v "$(pwd)/certbot/www:/var/www/certbot" \
+  certbot/certbot certonly --webroot \
+  -w /var/www/certbot -d {YOUR-DOMAIN-NAME} \
+  --email {YOUR@EMAIL.com} --agree-tos --no-eff-email
+```
+- The -w (webroot) flag is the key.
+- The Certbot source code dictates that when using `--webroot`, Certbot automatically creates a sub-folder named `.well-known/acme-challenge/` inside the path you gave it (/var/www/certbot).
+- You don't have to code it; the Certbot program itself creates it on the fly.
+
+And:
+```
+location /.well-known/acme-challenge/ {
+    root /var/www/certbot;
+}
+```
+- The Proof: This is where the math happens. In Nginx, the root directive appends the location path to the root path.
+- Request: `http://domain.com/.well-known/acme-challenge/testfile`
+- Nginx Calculation: `/var/www/certbot` + `/.well-known/acme-challenge/testfile`
+- Final Result: Nginx looks for a file at `/var/www/certbot/.well-known/acme-challenge/testfile`
+
+### Flow:
+```
+Step 1: Configuration
+docker-compose.yml defines Volumes > Nginx default.conf adds Challenge Location > docker compose up -d starts Nginx.
+
+Step 2: The Bridge
+Docker creates ~/docker-app/certbot/www on Ubuntu > Docker "mounts" (links) this folder into the Nginx container at /var/www/certbot.
+
+Step 3: The Request
+You run docker run certbot > Certbot asks Let's Encrypt for a certificate > Let's Encrypt sends a unique "Secret Token" back to Certbot.
+
+Step 4: The Write
+Certbot writes the Token to its internal /var/www/certbot/ folder > Token instantly appears in Ubuntu's ~/docker-app/certbot/www > Token instantly appears inside Nginx at /var/www/certbot/.
+
+Step 5: The Verification
+Let's Encrypt Server hits http://your-domain.com/.well-known/acme-challenge/TOKEN > Nginx receives request > Nginx looks in its /var/www/certbot/ folder > Nginx finds the Token and sends it to Let's Encrypt.
+
+Step 6: The Reward
+Let's Encrypt validates the Token > Let's Encrypt sends the SSL Certificate files (.pem) to Certbot > Certbot saves them into the ./certbot/conf Volume on your Ubuntu host.
+
+Step 7: The Upgrade
+Certbot container deletes itself (--rm) > You update nginx.conf to use Port 443 and the new .pem files > docker compose restart nginx > Website is now HTTPS.
+```
+
 
 ## 3. Prevent Bot Crawlers via CloudFlare & Nginx
 This is a high-level security move. By doing this, you are effectively "cloaking" your server. To the rest of the internet (and those Baidu bots), your server will simply look like it doesn't exist. Only Cloudflare will be allowed to "knock on the door."
