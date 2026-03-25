@@ -313,9 +313,9 @@ sudo certbot --nginx -d new.subdomain.com
 
 
 ### 2.4. Nginx - Internal Server Files (Host's Nginx + Docker Containers)
-This part will set up nginx separately from Docker's compose files and Dockerfiles. Nothing should change much. The only change is a small change in the nginx conf file. 
+This part will set up a new nginx separately from Docker's compose files and Dockerfiles. Nothing should change much. The only change is a small change in the nginx conf file. 
 
-First, you just need to run the fullstack in Docker containers first, and the frontend listens on port 8080:80
+First, you just need to run the full-stack in Docker containers first, and the frontend listens on port 8080:80
 
 Second, in your host machine, go to: `/etc/nginx/sites-available/default.conf`, and update it like this:
 
@@ -330,9 +330,17 @@ server {
     proxy_pass http://localhost:8080;
   }
 }
-
 ```
+Third, start your containers and go to the browser, type: `{YOUR-PUBLIC-IP}:8080`
 
+Additionally, you can configure SSL here, but I chose not to.
+
+### 2.5. Nginx - Everything in Docker Containers
+
+For more info on what the difference is between using:
+- 
+
+Please refer to this [Documentation]()
 
 
 
