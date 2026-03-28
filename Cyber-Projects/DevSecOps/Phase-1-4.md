@@ -354,6 +354,11 @@ server {
 
         server_name {YOUR-DOMAIN-NAME};
 
+        # REQUIRED FOR SSL VALIDATION
+        location /.well-known/acme-challenge/ {
+          root /var/www/certbot;
+        }
+
         location / {
                 proxy_pass http://frontend:80;
                 proxy_set_header Host $host;
