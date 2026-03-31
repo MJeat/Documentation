@@ -80,7 +80,3 @@ Once these VMs are running and can ping each other, you are officially ready for
 
 ---
 
-**Should I provide the PHP code for the "Vulnerable Web Portal" now?**
-```
-
-This version is clean, well-structured, and professional. Ready to save as a `.md` file!
