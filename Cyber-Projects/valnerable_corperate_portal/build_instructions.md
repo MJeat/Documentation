@@ -1,6 +1,6 @@
 
 
-```markdown
+
 To build the **Legacy Corporate Intranet** project effectively, you need a controlled environment where you can safely perform "attacks" and capture traffic.
 
 Here is your executive guide for the **Lab Setup Phase (Stage 0)**.
