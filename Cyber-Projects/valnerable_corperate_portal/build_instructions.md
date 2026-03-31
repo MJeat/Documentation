@@ -1,178 +1,65 @@
-# Legacy Corporate Intranet Project – Lab Setup Phase (Stage 0)
+Here's your text cleanly converted to proper Markdown:
 
-To build the **Legacy Corporate Intranet** project effectively, you need a controlled environment where you can safely perform "attacks" and capture traffic.  
+```markdown
+### The "Legacy" Service Checklist (Continued)
 
-This is your executive guide for the **Lab Setup Phase (Stage 0)**.
+On your **Target Server (VM 2)**, install and intentionally misconfigure the following services:
 
----
+- **The Web & Database (LAMP Stack):**  
+  ```bash
+  sudo apt install apache2 mysql-server php libapache2-mod-php php-mysql
+  ```
+  *Vulnerability:* Keep it on **Port 80 (HTTP)**. **Do not install SSL/HTTPS.**
 
-## 1. VM Inventory (The Architecture)
+- **File Transfer (FTP):**  
+  ```bash
+  sudo apt install vsftpd
+  ```
+  *Vulnerability:* Enable **anonymous login** in `/etc/vsftpd.conf`.
 
-I recommend a **3-VM setup**. While 2 VMs work, 3 allows you to simulate a "Victim" user, which makes your Wireshark traffic captures (Stage 3) much more professional.
+- **Remote Management (Telnet & SSH):**  
+  ```bash
+  sudo apt install telnetd openssh-server
+  ```
+  *Vulnerability:* Telnet is plaintext by default. For SSH, allow **"Password Authentication"** and **"Root Login"** (very weak).
 
-### VM 1: The Attacker (Kali Linux)
-- **Purpose:** Your primary workstation.  
-- You will run:
-  - Nmap
-  - Wireshark
-  - Metasploit
-  - Gobuster
+- **Email (SMTP):**  
+  ```bash
+  sudo apt install postfix
+  ```
+  *Vulnerability:* Configure it as an **"Internet Site"** but with no encryption requirements.
 
-### VM 2: The Target Server (Ubuntu Server 18.04 or 20.04)
-- **Purpose:** This is the "Legacy Intranet."  
-- Hosts:
-  - Website
-  - Database
-  - Old services (FTP, Telnet, etc.)
+### 4. Pre-VA Preparation (Stage 0 Completion)
 
-- **Note:**  
-  Using an older version like **Ubuntu 16.04 or 18.04** is better because it includes more "vulnerable" software by default.
+Before you start your **Reconnaissance (Stage 1)**, ensure the "Target" is ready for discovery:
 
-### VM 3: The Employee/Client (Windows 10 or Linux Mint)
-- **Purpose:** A regular "Staff" machine.  
-- Used to:
-  - Log into the website
-  - Send emails  
-- This generates **plaintext traffic** for sniffing from the Kali machine.
+1. **Populate the Database:**  
+   Create a `users` table in MySQL. Add a user `admin` with password `admin123` and a user `staff` with password `password`.
 
----
+2. **Web "Breadcrumbs":**  
+   Create a folder at `/var/www/html/backups` and put a fake file inside called `config_backup.txt`.  
+   Ensure **Directory Listing** is enabled in the Apache config so `Gobuster` can find it.
 
-## 2. Network Configuration (Crucial)
+3. **The "Insecure" Upload:**  
+   Create a simple PHP page that allows users to upload a "Profile Picture" but has **zero** file type checks (this allows you to upload a "Reverse Shell" later).
 
-You must isolate these machines to avoid scanning your real network.
+4. **Firewall Check:**  
+   Ensure the firewall is either OFF or only allowing the specific ports you want to test:
+   ```bash
+   sudo ufw allow 21, 22, 23, 25, 80, 3306/tcp
+   ```
 
-### VirtualBox
-- Go to: `Settings > Network`
-- Set all VMs to:
-  - **NAT Network** *(create in Global Preferences)*  
-  **OR**
-  - **Host-Only Adapter**
+### Summary Table for your Report
 
-### VMware
-- Set all VMs to the same:
-  - **LAN Segment**
+| VM Name      | Role            | OS              | IP Address (Example) |
+|--------------|-----------------|-----------------|----------------------|
+| **K-Attack** | Attacker        | Kali Linux      | 192.168.56.10        |
+| **Legacy-Srv** | Target        | Ubuntu 18.04    | 192.168.56.20        |
+| **Staff-PC** | Victim/Client   | Win10 / Linux   | 192.168.56.30        |
 
-### Goal
-- All VMs can `ping` each other  
-- Must be on a private subnet (e.g., `192.168.56.x`)
+**Once these VMs are running and can ping each other, you are officially ready for Stage 1: Reconnaissance.**
 
----
-
-## 3. The "Legacy" Service Checklist
-
-On your **Target Server (VM 2)**, install and intentionally misconfigure these services:
-
-### Web & Database (LAMP Stack)
-```bash
-sudo apt install apache2 mysql-server php libapache2-mod-php php-mysql
-
-````markdown
-## Vulnerability
-- Use Port 80 (HTTP)
-- ❌ Do NOT install SSL/HTTPS
-
----
-
-## File Transfer (FTP)
-```bash
-sudo apt install vsftpd
-````
-
-**Vulnerability:**
-
-* Enable anonymous login in `/etc/vsftpd.conf`
-
----
-
-## Remote Management (Telnet & SSH)
-
-```bash
-sudo apt install telnetd openssh-server
+Should I provide the PHP code for the **"Vulnerable Web Portal"** now?
 ```
 
-**Vulnerabilities:**
-
-* Telnet is plaintext
-* SSH:
-
-  * Enable Password Authentication
-  * Allow Root Login (weak)
-
----
-
-## Email (SMTP)
-
-```bash
-sudo apt install postfix
-```
-
-**Vulnerability:**
-
-* Configure as "Internet Site"
-* No encryption required
-
----
-
-## 4. Pre-VA Preparation (Stage 0 Completion)
-
-Before starting **Stage 1: Reconnaissance**, prepare the target:
-
-### 1. Populate the Database
-
-* Create a `users` table in MySQL
-* Add:
-
-  * `admin / admin123`
-  * `staff / password`
-
----
-
-### 2. Web "Breadcrumbs"
-
-```bash
-/var/www/html/backups
-```
-
-* Add file:
-
-  * `config_backup.txt`
-* Enable **Directory Listing** in Apache
-
----
-
-### 3. Insecure File Upload
-
-* Create a PHP page for "Profile Picture" upload
-
-**Vulnerability:**
-
-* No file type validation
-* Allows reverse shell upload later
-
----
-
-### 4. Firewall Configuration
-
-```bash
-sudo ufw allow 21, 22, 23, 25, 80, 3306/tcp
-```
-
-* Ensure firewall is:
-
-  * OFF
-    **OR**
-  * Only allows required ports
-
----
-
-## Summary Table for Report
-
-| VM Name    | Role          | OS                 | IP Address (Example) |
-| ---------- | ------------- | ------------------ | -------------------- |
-| K-Attack   | Attacker      | Kali Linux         | 192.168.56.10        |
-| Legacy-Srv | Target        | Ubuntu 18.04       | 192.168.56.20        |
-| Staff-PC   | Victim/Client | Windows 10 / Linux | 192.168.56.30        |
-
-```
-```
-
+This version is clean, consistent with your previous sections, and ready to use in your guide. Just paste it into your `.md` file! Let me know if you want to combine it with the previous parts or need any adjustments.
