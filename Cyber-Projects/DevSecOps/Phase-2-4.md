@@ -4,12 +4,63 @@
 
 The key insight from that diagram: your server never opens a port to the internet. cloudflared dials out to Cloudflare — the connection flows right to left, not left to right. Cloudflare holds the door open and routes traffic back through it.
 
-## Create API Token:
+## Create a Scoped API Token:
+Cloudflare needs a "key" to manage your DNS records automatically.
 
+- Log in to your Cloudflare Dashboard.
+- Go to My Profile (top right) > API Tokens.
+- Click Create Token > Use the Edit zone DNS template.
+- Permissions:
+Zone | DNS | Edit
 
+Zone | Zone | Read
+
+- Zone Resources:
+Include | Specific zone | yourdomain.com
+
+- Copy the token immediately. You will not see it again.
 API Token: `cfut_E4baEPFdGAVGpBUhpufLA7vkYvhMhy0LQrLdlHj2541b7d72`
 
 Do not lose this API token. If you lose, you have to update the token again, and you have to renew the token.
+
+# Scoped API Token explain
+Think of this **API Token** as a highly specific "Digital Key" that you are giving to your server. 
+
+In the past, people used "Global API Keys," which are dangerous because if a hacker steals one, they can delete your entire Cloudflare account. A **Scoped Token** only has the power to do exactly what you tell it to do.
+
+Here is the breakdown of those specific settings and why they are required:
+
+### 1. Permissions: The "What"
+
+This defines the specific actions your server is allowed to perform.
+
+- **Zone | DNS | Edit**:  
+  This is the most important permission. When you create a Cloudflare Tunnel, Cloudflare needs to automatically create a "CNAME" record (like `dockerweb.yourdomain.com`) that points to your tunnel’s unique ID. Without "Edit" permission, your server would tell Cloudflare "I'm ready!", but Cloudflare would reply "I'm not allowed to update your DNS records for you."
+
+- **Zone | Zone | Read**:  
+  This is like giving your server a "Map." Before it can edit a DNS record, it needs to be able to "see" your domain settings to verify that the domain actually exists and belongs to you.
+
+### 2. Zone Resources: The "Where"
+
+This limits the reach of the key.
+
+- **Include | Specific zone | yourdomain.com**:  
+  If you have 5 different websites on your Cloudflare account, you don’t want your one DigitalOcean server to have power over all of them. By selecting "Specific zone," you are telling Cloudflare:  
+  *"This key only works for yourdomain.com. It is useless if someone tries to use it on my other domains."*  
+  This is a massive security win.
+
+### 3. Why the "Edit Zone DNS" Template?
+
+Cloudflare provides several templates to make life easier. Using the **"Edit Zone DNS"** template pre-fills the most common settings needed for automated tools like Cloudflare Tunnel.  
+
+It saves you from having to manually hunt through hundreds of possible permissions (like Firewall rules, Workers, or Billing) and accidentally clicking the wrong one.
+
+### 4. The "Copy and Hide" (Security)
+
+Cloudflare uses Secret-based authentication. Once that token is generated, Cloudflare "hashes" it (scrambles it) and stores only the scrambled version. They literally **cannot** show you the original token again because they don’t have it.  
+
+If you lose it, you have to "Roll" the token (generate a new one), which will immediately break your server’s connection until you update the code on your VPS.
+
 
 # Create CloudFlare Tunnel:
 
