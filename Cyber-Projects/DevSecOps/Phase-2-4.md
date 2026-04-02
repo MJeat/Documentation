@@ -251,7 +251,7 @@ Now, Cloudflare sends the traffic to the tunnel, the tunnel hands it to Nginx on
 
 Usually, security experts say **"Never use Flexible mode!"** This is because, on the traditional internet, Flexible mode sends data from Cloudflare to your server in plain text over the public web, where hackers could sniff it.
 
-However, you are using a **Cloudflare Tunnel**. The Tunnel itself is a pre-encrypted, private pipe. Even though Nginx is receiving "HTTP" traffic, that traffic is inside a secure "Virtual Private Data Network."  
+However, you are using a **Cloudflare Tunnel**. The Tunnel itself is a pre-encrypted, private pipe. Even though Nginx is receiving "HTTP" traffic, that traffic is inside a secure "Virtual Private Data Network.". In short, it is safe. Adding Certbot again if you are tech gaints or really need a strong security because the extra certificates setup is more complicated.  
 
 It’s like sending a plain-text letter inside a titanium-armored briefcase. The letter is unlocked, but no one can see it because the briefcase is indestructible.
 
