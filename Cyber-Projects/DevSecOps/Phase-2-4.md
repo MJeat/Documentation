@@ -194,7 +194,11 @@ Now, let's make it so you have to log in via email before even seeing the n8n/ap
   - Then, go to `Access Control` > `Applications`
 - Click Add an Application > Self-hosted.
 - Application Name: My Secure App.
-- Domain: dockerweb.yourdomain.com.
+- Add Public Hostname:
+  - Default
+  - Subdomain: `dockerweb`
+  - Domain name: `portfoliomkc.tech`
+  - Path: (Leave it as empty)
 - Policies: (If you have policies, select existing. If you do not, create below)
   - Policy Name: `Allow Me`
   - Action: `Allow`
@@ -206,7 +210,7 @@ Then click Save. Once you have created this policy, you need to refresh the Appl
 
 - Disable the `Accept all available identity providers` if you don't want to log in with other sites (e.g., GitHub)
 - Authentication: Cloudflare will handle the "One-Time Pin" (OTP) to your email by default. No need to touch anything else.
-- Keep going next and you will be asked to choose a plan.
+- Keep going next, and you will be asked to choose a plan.
   - Select the `Free Plan` & enter your credit card info to prevent fraud.
   - Once done, you can refresh all pages
 
@@ -268,6 +272,44 @@ By staying on **Flexible** with a Tunnel, you get the best of both worlds:
 1. **Zero Maintenance**: You never have to run Certbot again.
 2. **Resource Savings**: Your Droplet doesn't have to waste CPU power encrypting and decrypting SSL packets locally. Cloudflare’s massive data centers do that heavy lifting for you.
 3. **Maximum Security**: Since your DigitalOcean firewall has Port 80 and 443 closed to the public, the only way into your server is through that private, authenticated tunnel.
+
+# Questions
+> Do i need the zero trust? Let's say i want people to access my web too as public. What dont i need 
+
+Whether you "need" Zero Trust depends entirely on who the website is for.
+
+If you want your portfolio to be a **public website** that anyone (recruiters, friends, the internet) can visit, then **Zero Trust Access** is actually your enemy. It acts like a "Bouncer" at the door — if a recruiter clicks your link and sees a "Please Log In with your Email" screen, they will likely just close the tab.
+
+### 🟢 What you DON'T need (For a Public Web)
+
+If your goal is a public portfolio, you should **remove the Access Application** but keep the Tunnel.
+
+- **Remove "Access Applications"**: In the Cloudflare Zero Trust dashboard, go to **Access > Applications** and delete (or disable) the policy for `dockerweb.portfoliomkc.tech`. This "fires the bouncer."
+- **Remove "Identity Providers"**: You don't need to configure Google or Email OTP logins for the public part of your site.
+- **Remove "Certbot"**: You still don't need this! The Tunnel provides the "Green Lock" for the public, so your site stays secure without the headache.
+
+### 🛡️ What you SHOULD keep (The Tunnel)
+
+You should definitely keep the **Cloudflare Tunnel**. Even for a public site, the Tunnel is superior to the "Old Way" because:
+
+- Your DigitalOcean IP address stays hidden.
+- Your Firewall ports (80/443) stay closed.
+- Cloudflare handles the SSL (HTTPS) for the public automatically.
+
+### 💡 The "Hybrid" Strategy (Best of Both Worlds)
+
+Most developers use a "Split" setup. You can have both public and private areas on the same server:
+
+1. **Public** (`portfolio.tech`): You set up a Tunnel hostname for this, but **NO** Zero Trust Access policy. Anyone can see your work.
+2. **Private** (`n8n.portfolio.tech` or `admin.portfolio.tech`): You set up a Tunnel hostname for these and **DO** apply a Zero Trust Access policy. Only you can log in to manage your automation or backend.
+
+### 🏗️ Summary: To make your site public right now
+
+1. Keep the Tunnel running in Docker (don't change your `docker-compose.yml`).
+2. Keep the Hostname in the Tunnel settings (`dockerweb.portfoliomkc.tech` → `nginx-system:80`).
+3. Delete the Application in **Zero Trust > Access > Applications**.
+
+As soon as you delete that Access Application, anyone who types in your URL will land directly on your Nginx/Frontend without being asked for an email code.
 
 # Project 04: ...
 
