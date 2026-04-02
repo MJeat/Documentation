@@ -274,7 +274,24 @@ URL: `dockerweb.portfoliomkc.tech`
 <img width="620" height="680" alt="image" src="https://github.com/user-attachments/assets/270ca2b6-3ed8-4630-8f80-64c0ee4f243e" />
 
 - Even if you put other emails, it won't send the code to that email. The OTP code only sends to the given email during the application send up.
-- Additionally, go to your registered domain name > SSL/TLS > Configure the SSL/TLS to `Flexible`.
+- Additionally, you have to close ALL ports, except 22/tcp (SSH)
+```
+# 1. Reset UFW to factory defaults (This will ask for confirmation)
+sudo ufw reset
+
+# 2. Set default policies: Block everything coming in, allow everything going out
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+
+# 3. CRITICAL: Allow SSH so you don't get kicked out
+sudo ufw allow 22/tcp
+sudo ufw allow 5678    # if you have other running services, you can allow here.
+
+# 4. Enable the firewall
+sudo ufw enable
+```
+ 
+- Lastly, go to your registered domain name > SSL/TLS > Configure the SSL/TLS to `Flexible`.
 
 # Explanation on why we use Flexible:
 
