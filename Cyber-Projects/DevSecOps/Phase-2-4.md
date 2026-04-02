@@ -1,4 +1,4 @@
-<img width="1920" height="1080" alt="image" src="https://github.com/user-attachments/assets/b170d0d7-9795-48d8-9a93-6b567c911ea0" /># Project 03: Cloudflare Tunnel + Zero Trust Access
+# Project 03: Cloudflare Tunnel + Zero Trust Access
 
 <img width="840" height="802" alt="image" src="https://github.com/user-attachments/assets/8363df38-f263-4c19-a990-4b1167feeefd" />
 
@@ -199,7 +199,7 @@ URL: `dockerweb.portfoliomkc.tech`
 
 <img width="620" height="680" alt="image" src="https://github.com/user-attachments/assets/270ca2b6-3ed8-4630-8f80-64c0ee4f243e" />
 
-
+- Even if you put other emails, it won't send the code to that email. The OTP code only sends to the given email during the application send up.
 
 # Project 04: ...
 
