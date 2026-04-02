@@ -190,6 +190,8 @@ docker compose up -d --build
 Now, let's make it so you have to log in via email before even seeing the n8n/app screen.
 
 - Go to Zero Trust > Access > Applications.
+  - You have an issue, go to your URL and replace `/home/overview` with `/one/overview`.
+  - Then, go to `Access Control` > `Applications`
 - Click Add an Application > Self-hosted.
 - Application Name: My Secure App.
 - Domain: dockerweb.yourdomain.com.
@@ -203,7 +205,10 @@ Now, let's make it so you have to log in via email before even seeing the n8n/ap
   - Select the `Free Plan` & enter your credit card info to prevent fraud.
   - Once done, you can refresh all pages
 
-<img width="1363" height="777" alt="image" src="https://github.com/user-attachments/assets/20666994-7ebd-45ed-9238-a4fdd993e5c6" />
+<img width="1561" height="603" alt="image" src="https://github.com/user-attachments/assets/8d8767f5-a8cb-4513-a229-c57a8a7f6d93" />
+
+
+<img width="663" height="677" alt="image" src="https://github.com/user-attachments/assets/20666994-7ebd-45ed-9238-a4fdd993e5c6" />
 
 Then click Save. Once you have created this policy, you need to refresh the Application tab so that you can choose policies.
 
