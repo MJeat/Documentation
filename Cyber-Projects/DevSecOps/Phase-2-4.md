@@ -199,18 +199,18 @@ Now, let's make it so you have to log in via email before even seeing the n8n/ap
   - Policy Name: `Allow Me`
   - Action: `Allow`
   - Include: `Emails` > Enter your email address.
+
+<img width="663" height="677" alt="image" src="https://github.com/user-attachments/assets/20666994-7ebd-45ed-9238-a4fdd993e5c6" />
+
+Then click Save. Once you have created this policy, you need to refresh the Application tab so that you can choose policies.
+
 - Disable the `Accept all available identity providers` if you don't want to log in with other sites (e.g., GitHub)
 - Authentication: Cloudflare will handle the "One-Time Pin" (OTP) to your email by default. No need to touch anything else.
 - Keep going next and you will be asked to choose a plan.
   - Select the `Free Plan` & enter your credit card info to prevent fraud.
   - Once done, you can refresh all pages
 
-<img width="1561" height="603" alt="image" src="https://github.com/user-attachments/assets/8d8767f5-a8cb-4513-a229-c57a8a7f6d93" />
-
-
-<img width="663" height="677" alt="image" src="https://github.com/user-attachments/assets/20666994-7ebd-45ed-9238-a4fdd993e5c6" />
-
-Then click Save. Once you have created this policy, you need to refresh the Application tab so that you can choose policies.
+<img width="661" height="503" alt="image" src="https://github.com/user-attachments/assets/8d8767f5-a8cb-4513-a229-c57a8a7f6d93" />
 
 
 # Result:
