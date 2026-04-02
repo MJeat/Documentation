@@ -219,6 +219,55 @@ URL: `dockerweb.portfoliomkc.tech`
 <img width="620" height="680" alt="image" src="https://github.com/user-attachments/assets/270ca2b6-3ed8-4630-8f80-64c0ee4f243e" />
 
 - Even if you put other emails, it won't send the code to that email. The OTP code only sends to the given email during the application send up.
+- Additionally, go to your registered domain name > SSL/TLS > Configure the SSL/TLS to `Flexible`.
+
+# Explanation on why we use Flexible:
+
+Switching to **Flexible** fixed it because it resolved a major communication mismatch between Cloudflare’s "brain" and your server's "ears."
+
+Here is exactly what was happening behind the scenes and why that switch was the final piece of the puzzle.
+
+### 1. The "Handshake" Breakdown
+
+Think of the connection to your website in two distinct segments:
+
+- **Segment A**: The Visitor ↔ Cloudflare (The Internet)
+- **Segment B**: Cloudflare ↔ Your Server (The Tunnel)
+
+When your setting was on **Full** or **Full (Strict)**, Cloudflare was trying to be "extra secure." It was telling your server: *"I will only talk to you if you speak HTTPS (Port 443)."*
+
+But remember what we did in your `nginx.conf`? We deleted the SSL certificates and the Port 443 block. Your Nginx was only listening on **Port 80 (HTTP)**. So Cloudflare would knock on the door for Port 443, find no one home, and show **"Web Server Down."**
+
+### 2. How "Flexible" Fixed It
+
+By switching to **Flexible**, you changed Cloudflare’s instructions. You told it:
+
+- "When a visitor comes to me, keep the connection secure (**HTTPS**)."
+- "But when I talk to the server through the Tunnel, it’s okay to use plain **HTTP** (Port 80)."
+
+Now, Cloudflare sends the traffic to the tunnel, the tunnel hands it to Nginx on Port 80, and Nginx says: *"Finally! I know exactly what to do with this."*
+
+### 3. The "Security Paradox": Is Flexible actually safe?
+
+Usually, security experts say **"Never use Flexible mode!"** This is because, on the traditional internet, Flexible mode sends data from Cloudflare to your server in plain text over the public web, where hackers could sniff it.
+
+However, you are using a **Cloudflare Tunnel**. The Tunnel itself is a pre-encrypted, private pipe. Even though Nginx is receiving "HTTP" traffic, that traffic is inside a secure "Virtual Private Data Network."  
+
+It’s like sending a plain-text letter inside a titanium-armored briefcase. The letter is unlocked, but no one can see it because the briefcase is indestructible.
+
+### 4. Comparison of the Modes
+
+| SSL Mode          | Visitor ↔ Cloudflare     | Cloudflare ↔ Server      | Requirement                          |
+|-------------------|--------------------------|--------------------------|--------------------------------------|
+| Full (Strict)     | HTTPS (Secure)           | HTTPS (Secure)           | Valid Certbot/SSL on VPS             |
+| Full              | HTTPS (Secure)           | HTTPS (Secure)           | Self-signed SSL on VPS               |
+| Flexible          | HTTPS (Secure)           | HTTP (Clear)             | No SSL needed on VPS                 |
+
+By staying on **Flexible** with a Tunnel, you get the best of both worlds:
+
+1. **Zero Maintenance**: You never have to run Certbot again.
+2. **Resource Savings**: Your Droplet doesn't have to waste CPU power encrypting and decrypting SSL packets locally. Cloudflare’s massive data centers do that heavy lifting for you.
+3. **Maximum Security**: Since your DigitalOcean firewall has Port 80 and 443 closed to the public, the only way into your server is through that private, authenticated tunnel.
 
 # Project 04: ...
 
