@@ -1,6 +1,6 @@
 # Project 03: Cloudflare Tunnel + Zero Trust Access
 
-<img width="1440" height="1102" alt="image" src="https://github.com/user-attachments/assets/8363df38-f263-4c19-a990-4b1167feeefd" />
+<img width="840" height="802" alt="image" src="https://github.com/user-attachments/assets/8363df38-f263-4c19-a990-4b1167feeefd" />
 
 The key insight from that diagram: your server never opens a port to the internet. cloudflared dials out to Cloudflare — the connection flows right to left, not left to right. Cloudflare holds the door open and routes traffic back through it.
 
@@ -21,7 +21,7 @@ docker run cloudflare/cloudflared:latest tunnel --no-autoupdate run --token eyJh
 ```
 Keep an eye on the connection status:
 
-<img width="839" height="775" alt="image" src="https://github.com/user-attachments/assets/147a5b51-2570-450c-aa10-7151ff553eb5" />
+<img width="639" height="675" alt="image" src="https://github.com/user-attachments/assets/147a5b51-2570-450c-aa10-7151ff553eb5" />
 
 # Update `docker-compose.yml` & `nginx.conf`
 
