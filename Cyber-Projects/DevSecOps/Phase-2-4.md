@@ -186,8 +186,22 @@ docker compose up -d --build
   - Type: ``HTTP``
   - URL: ``nginx-system:80`` (This points the tunnel to your Nginx container).
 
-# 
+# Set up Zero Trust Access (The Identity Wall) in CloudFlare One
+Now, let's make it so you have to log in via email before even seeing the n8n/app screen.
 
+- Go to Zero Trust > Access > Applications.
+- Click Add an Application > Self-hosted.
+- Application Name: My Secure App.
+- Domain: dockerweb.yourdomain.com.
+- Policies: (If you have policies, select existing. If you do not, create below)
+  - Policy Name: `Allow Me`
+  - Action: `Allow`
+  - Include: `Emails` > Enter your email address.
+- Disable the `Accept all available identity providers` if you don't want to log in with other sites (e.g., GitHub)
+- Authentication: Cloudflare will handle the "One-Time Pin" (OTP) to your email by default. No need to touch anything else.
+- Keep going next and you will be asked to choose a plan.
+  - Select the `Free Plan` & enter your credit card info to prevent fraud.
+  - Once done, you can refresh all pages
 
 <img width="1363" height="777" alt="image" src="https://github.com/user-attachments/assets/20666994-7ebd-45ed-9238-a4fdd993e5c6" />
 
