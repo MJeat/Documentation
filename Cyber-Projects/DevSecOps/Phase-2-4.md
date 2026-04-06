@@ -621,23 +621,32 @@ Now that the Hub (your dashboard) is up, you need to install the **Agent** (the 
 2. Click the **"Add System"** button in the top right.
 3. A window will pop up. You will see a long string starting with `ssh-ed25519 ...`
 
-   → Copy this key. This is how the Agent and Hub securely communicate with each other.
+Or you can just follow step 2 below.
 
 ### 2. Update your `docker-compose.yml`
 
-Add the following `beszel-agent` service to your file:
+Add the following `beszel-agent` service to your file. For the agent, you should just scroll to the left and click `Edit` > `Copy Docker Compose`
+
+<img width="1267" height="538" alt="image" src="https://github.com/user-attachments/assets/4b03fc22-dc14-46dc-96e4-6037779ddfaf" />
+
+And the `Host/IP` should be your Tailscale IP.
 
 ```
   beszel-agent:
-    image: henrygd/beszel-agent:latest
+    image: henrygd/beszel-agent
     container_name: beszel-agent
     restart: unless-stopped
-    network_mode: host          # This lets it see the real CPU/RAM of the VPS
+    network_mode: host
     volumes:
-      - /var/run/docker.sock:/var/run/docker.sock:ro   # Allows it to see other containers
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./beszel_agent_data:/var/lib/beszel-agent
+      # monitor other disks / partitions by mounting a folder in /extra-filesystems
+      # - /mnt/disk/.beszel:/extra-filesystems/sda1:ro
     environment:
-      - PORT=45876
-      - KEY=ssh-ed25519 YOUR_COPIED_KEY_HERE
+      LISTEN: 45876
+      KEY: 'ssh-ed25519 {KEY}'
+      TOKEN: {TOKEN}
+      HUB_URL: http://monitor.internal:8090
 ```
 
 **Why these settings?**
@@ -658,7 +667,7 @@ docker compose up -d beszel-agent
 
 1. Go back to the **"Add System"** popup in your Beszel dashboard.
 2. **Name**: Call it `Ubuntu-King` (or whatever you like).
-3. **Host/IP**: Enter `127.0.0.1` (since the agent is on the same machine as the Hub).
+3. **Host/IP**: Enter Tailscale IP (since the agent is on the same machine as the Hub).
 4. **Port**: `45876`
 5. Click **"Add System"**.
 
