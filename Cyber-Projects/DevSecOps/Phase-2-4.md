@@ -416,6 +416,7 @@ In short, while both create a secure "pipe" for data, they are built for differe
 
 
 # Project 04: Tailscale VPN Mesh + CoreDNS Internal Resolver
+[Summary](https://github.com/MJeat/Documentation/blob/main/Cyber-Projects/DevSecOps/phase2-4-summary.md)
 
 ## Set up Tailscale on Ubuntu
 Installation: 
