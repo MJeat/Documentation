@@ -245,6 +245,7 @@ Now, let's make it so you have to log in via email before even seeing the n8n/ap
   - Then, go to `Access Control` > `Applications`
 - Click Add an Application > Self-hosted.
 - Application Name: My Secure App.
+- Session Duration: 24 Hours `(Note: This is the "how long it remembers your login cache before asking you to give your email verification again")`
 - Add Public Hostname:
   - Default
   - Subdomain: `dockerweb`
@@ -459,11 +460,15 @@ sudo ufw enable
 On your SSH software (Termius, PuTTY, or Tabby):
 - Keep your 22 port and SSH keys location
   - Question:
-> port 22 is already closed, why have port? Answer: Your network has two adapters now (`eth0` and `tailscale0`). You block everything in `eth0` (no one can scan for the open ports), while your system accepts EVERYTHING coming from your tailscale IP because we allow `tailscale0`.
+> port 22 is already closed, why have port? Answer: Your network has two adapters now (`eth0` and `tailscale0`). You block everything in `eth0` (no one can scan for the open ports), while your system accepts EVERYTHING coming from your tailscale IP because we allow `tailscale0`. For the ports, it can be any ports. But to keep things simple, since you are using SSH, just keep the 22 port.
 
 - Replace your VPS public IPv4 with Tailscale IPv4
 - Connect your laptop/PC to the Tailscale network
 
 Now, we have established a connection that only we can enter.
+
+## Set up CoreDNS
+
+
 
 
