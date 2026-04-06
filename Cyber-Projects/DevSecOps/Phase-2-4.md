@@ -414,5 +414,56 @@ In short, while both create a secure "pipe" for data, they are built for differe
 - **Use a Tunnel** if you want to host a website or service (like n8n) so that you (or the public) can access it easily via a URL.
 
 
-# Project 04: ...
+# Project 04: Tailscale VPN Mesh + CoreDNS Internal Resolver
+
+## Set up Tailscale on Ubuntu
+Installation: 
+```
+sudo apt update && curl -fsSL https://tailscale.com/install.sh | sh 
+```
+Then turn the service up and get the IPv4 (You need to log in via the provided link first): 
+```
+sudo tailscale up && sudo tailscale ip
+```
+
+Next, let's test if it works. On your laptop/PC, try connecting to your Tailscale console network. Then, ping the tailscale IPv4. It should respond. Then, disconnect your laptop from the Tailscale network & ping again. It shouldn't work. 
+
+Let's turn the Tailscale connection back on and try to SSH: 
+```
+ssh root@{TAILSCALE-IP}
+```
+
+It should work, and it won't ask for a password since you already made the authentication as keys-based, not password-based.
+
+Now that we have established a connection that only we can enter, we can test more.
+
+We will allow all traffic from the Tailscale interface. This tells the firewall: `"If the traffic is coming from my private Tailscale network, I trust it completely."`
+
+```
+sudo ufw allow in on tailscale0
+```
+
+Then, we remove the Public SSH rule. We are going to stop allowing SSH from "Anywhere."
+
+```
+sudo ufw delete allow 22/tcp
+```
+Finally, if you haven't already reset your UFW, let's make it lean:
+
+```
+sudo ufw default deny incoming
+sudo ufw default allow outgoing
+sudo ufw enable
+```
+
+On your SSH software (Termius, PuTTY, or Tabby):
+- Keep your 22 port and SSH keys location
+  - Question:
+> port 22 is already closed, why have port? Answer: Your network has two adapters now (`eth0` and `tailscale0`). You block everything in `eth0` (no one can scan for the open ports), while your system accepts EVERYTHING coming from your tailscale IP because we allow `tailscale0`.
+
+- Replace your VPS public IPv4 with Tailscale IPv4
+- Connect your laptop/PC to the Tailscale network
+
+Now, we have established a connection that only we can enter.
+
 
