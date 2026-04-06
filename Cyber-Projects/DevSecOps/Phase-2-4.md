@@ -676,4 +676,28 @@ Within about 10–30 seconds, the red dot will turn green. You’ll start seeing
 - A **"Docker"** tab showing exactly how many resources your other containers (frontend, backend, n8n, etc.) are using.
 - Disk space usage and alerts.
 
+# Phase 4 Conclusions:
+
+This is from using the DNS name from CoreDNS:
+
+<img width="804" height="461" alt="image" src="https://github.com/user-attachments/assets/957c6af4-d308-4173-b0aa-ddc69bab1ff3" />
+
+
+You can still access the Beszel hub via the Tailscale IP, but:
+- It can take time to type
+- You might even forget the IP, so you have to open Tailscale to check for its IP, which is more time-consuming
+- You expose your Tailscale IP. You expose your IP in general. In general, we use DNS to hide our IP.
+
+<img width="717" height="551" alt="image" src="https://github.com/user-attachments/assets/ffab89a1-f83e-44d6-b71c-596dde3c9500" />
+
+
+And the main server is now called `monitor.internal`:
+
+<img width="477" height="277" alt="image" src="https://github.com/user-attachments/assets/b1f9778b-9bd8-40d4-93e3-cba56aa93c03" />
+
+However, this can only be accessed via Tailscale. Your CloudFlare subdomain is still out there, even if you disconnect from the Tailscale network:
+
+<img width="506" height="282" alt="image" src="https://github.com/user-attachments/assets/5ed9c780-84f7-4475-abdf-f7253d88ac59" />
+
+
 
