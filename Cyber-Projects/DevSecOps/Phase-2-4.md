@@ -693,11 +693,16 @@ You can still access the Beszel hub via the Tailscale IP, but:
 
 And the main server is now called `monitor.internal`:
 
-<img width="477" height="277" alt="image" src="https://github.com/user-attachments/assets/b1f9778b-9bd8-40d4-93e3-cba56aa93c03" />
+<img width="377" height="177" alt="image" src="https://github.com/user-attachments/assets/b1f9778b-9bd8-40d4-93e3-cba56aa93c03" />
 
 However, this can only be accessed via Tailscale. Your CloudFlare subdomain is still out there, even if you disconnect from the Tailscale network:
 
-<img width="506" height="282" alt="image" src="https://github.com/user-attachments/assets/5ed9c780-84f7-4475-abdf-f7253d88ac59" />
+<img width="306" height="182" alt="image" src="https://github.com/user-attachments/assets/5ed9c780-84f7-4475-abdf-f7253d88ac59" />
 
 
+Overall,
+- The CloudFlare Subdomain is available to the public via: `dockerweb.portfoliomkc.tech`
+- Beszel Monitoring is only available via the Tailscale network, using `monitor.internal` from internal CoreDNS configuration. You can also access/see the main web UI via `monitor.internal` as well, but the public does not have the privilege to see your Beszel monitoring hub.
+
+--- ENDS ---
 
