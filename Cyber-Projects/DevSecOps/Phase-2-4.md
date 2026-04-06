@@ -469,6 +469,202 @@ Now, we have established a connection that only we can enter.
 
 ## Set up CoreDNS
 
+### Why are we using CoreDNS?
 
+Right now, to see Beszel, you have to type `http://100.x.x.x:8090`. Humans are terrible at remembering numbers, but great at remembering names like `monitor.internal`.
+
+Tailscale has a feature called **MagicDNS**, but it only gives you names based on your machine names (like `ubuntu-king.tailnet-name.ts.net`).  
+
+**CoreDNS** gives you total creative freedom. You can make up any domain you want (`.internal`, `.home`, `.cool`) and point it wherever you like. It's also incredibly lightweight, making it perfect for your 1GB Droplet.
+
+### Step 1: Create the Folder Structure
+
+We need a place to store the configuration files so they don't get lost if the Docker container restarts.
+
+```
+mkdir -p ~/docker-app/coredns
+cd ~/docker-app/coredns
+```
+
+- `mkdir -p`: Create directory. The `-p` flag means "create parent folders if they don't exist."
+- `cd`: Change directory into the new folder.
+
+### Step 2: Create the "Corefile" (The Brain)
+
+The Corefile tells CoreDNS how to behave. It’s like the "Settings" menu for the DNS server.
+
+Create the file (Location: docker-app/coredns/):
+
+```
+nano Corefile
+```
+
+Paste the following:
+
+```
+internal {
+    file /etc/coredns/db.internal
+    log
+    errors
+}
+
+. {
+    forward . 1.1.1.1
+    cache 30
+}
+```
+
+**What does this mean?**
+
+- `internal { ... }`: This is a Server Block. It tells CoreDNS: "If anyone asks for a name ending in `.internal`, look inside this block for the answer."
+- `file /etc/coredns/db.internal`: Tells it to look at a specific "Map" file (which we will create next). This is inside the container of CoreDNS.
+- `log` & `errors`: Prints useful information to the Docker logs — great for troubleshooting.
+- `. { ... }`: The "Everything else" block.
+- `forward . 1.1.1.1`: Recursive DNS. If you ask for `google.com`, CoreDNS will ask Cloudflare’s DNS (1.1.1.1).
+- `cache 30`: Remembers answers for 30 seconds to improve speed.
+
+### Step 3: Create the Zone File (The Map)
+
+This is where we actually define the names (called a Zone File in DNS).
+
+Create the file:
+
+```
+nano db.internal
+```
+
+Paste this (replace `100.x.x.x` with your actual Tailscale IP):
+
+```
+$ORIGIN internal.
+@   IN  SOA sns.dns.icann.org. noc.dns.icann.org. 2017042745 7200 3600 1209600 3600
+@   IN  NS  localhost.
+
+monitor     IN  A   100.x.x.x
+```
+
+**What does this mean?**
+
+- `$ORIGIN internal.`: Sets the base domain. Everything below will end with `.internal`.
+- `monitor IN A 100.x.x.x`: The most important line — it maps `monitor.internal` to your VPS’s Tailscale IP.
+
+### Step 4: The Docker Compose Setup
+
+Add this service to your `docker-compose.yml`:
+
+```
+  coredns:
+    image: coredns/coredns:latest
+    container_name: coredns-internal
+    restart: always
+    volumes:
+      - ./coredns:/etc/coredns
+    ports:
+      - "100.x.x.x:53:53/udp"
+      - "100.x.x.x:53:53/tcp"
+    command: -conf /etc/coredns/Corefile
+```
+
+**Why these settings?**
+
+- `volumes`: Links your local folder to the container so it can read your `Corefile` and `db.internal`.
+- `ports`: Binds DNS port 53 **only** to your Tailscale IP. This prevents the public internet from using your VPS as an open DNS resolver (which can lead to attacks).
+
+### Step 5: The "Tailscale Handshake"
+
+Even though the server is running, your laptop doesn’t know about it yet.
+
+1. Go to your **Tailscale Admin Dashboard**.
+2. Navigate to **DNS → Nameservers**.
+3. Click **Add Nameserver → Custom...**
+4. Enter your VPS Tailscale IP (`100.x.x.x`).
+5. Make sure your IP appears in the Global Nameservers section.
+6. (Recommended / Optional) Enable **Split DNS**:
+   - Toggle it on and add `internal` as the domain. This tells your laptop: *"Use normal DNS for everything except names ending in `.internal` — for those, ask the VPS."*
+
+Or you can simply do this and continue the test:
+
+<img width="891" height="195" alt="image" src="https://github.com/user-attachments/assets/f18b305a-00ab-4904-a338-57ef4983ca2c" />
+
+
+### The Test
+
+Once you run `docker compose up -d`, wait 10 seconds, then on your laptop (with Tailscale ON), run:
+
+```
+nslookup monitor.internal
+```
+
+## Set up Beszel for Monitoring
+Add this to your `docker-compose.yml`:
+
+```
+beszel:
+    image: henrygd/beszel:latest
+    container_name: beszel-hub
+    restart: unless-stopped
+    ports:
+      - "100.x.x.x:8090:8090" # Only accessible via Tailscale
+    volumes:
+      - ./beszel_data:/beszel_data
+```
+
+Then, run: `docker compose up -d beszel`
+
+## Set up Beszel Agent for communicating with Beszel (Hub)
+
+Now that the Hub (your dashboard) is up, you need to install the **Agent** (the worker). The Hub is just a viewer — the Agent is what actually collects the CPU, RAM, and Docker data. Since we’re keeping this server a "Ghost," we’re going to connect the Agent to the Hub internally.
+
+### 1. Get your Public Key
+
+1. Open Beszel in your browser (`http://monitor.internal:8090`).
+2. Click the **"Add System"** button in the top right.
+3. A window will pop up. You will see a long string starting with `ssh-ed25519 ...`
+
+   → Copy this key. This is how the Agent and Hub securely communicate with each other.
+
+### 2. Update your `docker-compose.yml`
+
+Add the following `beszel-agent` service to your file:
+
+```
+  beszel-agent:
+    image: henrygd/beszel-agent:latest
+    container_name: beszel-agent
+    restart: unless-stopped
+    network_mode: host          # This lets it see the real CPU/RAM of the VPS
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro   # Allows it to see other containers
+    environment:
+      - PORT=45876
+      - KEY=ssh-ed25519 YOUR_COPIED_KEY_HERE
+```
+
+**Why these settings?**
+
+- `network_mode: host`: Essential for accurate monitoring. It allows the agent to see the actual Ubuntu hardware stats instead of just the container’s limited view.
+- `/var/run/docker.sock`: Gives the agent read-only access to Docker. This lets Beszel show resource usage of your other containers (Nginx, n8n, etc.).
+- `PORT=45876`: The default communication port used by Beszel.
+
+### 3. Deploy the Agent
+
+Run this command to start the agent:
+
+```
+docker compose up -d beszel-agent
+```
+
+### 4. Finalize in the Dashboard
+
+1. Go back to the **"Add System"** popup in your Beszel dashboard.
+2. **Name**: Call it `Ubuntu-King` (or whatever you like).
+3. **Host/IP**: Enter `127.0.0.1` (since the agent is on the same machine as the Hub).
+4. **Port**: `45876`
+5. Click **"Add System"**.
+
+Within about 10–30 seconds, the red dot will turn green. You’ll start seeing:
+- Real-time CPU and RAM graphs.
+- A **"Docker"** tab showing exactly how many resources your other containers (frontend, backend, n8n, etc.) are using.
+- Disk space usage and alerts.
 
 
