@@ -694,11 +694,11 @@ You can still access the Beszel hub via the Tailscale IP, but:
 
 And the main server is now called `monitor.internal`:
 
-<img width="177" height="177" alt="image" src="https://github.com/user-attachments/assets/b1f9778b-9bd8-40d4-93e3-cba56aa93c03" />
+<img width="277" height="177" alt="image" src="https://github.com/user-attachments/assets/b1f9778b-9bd8-40d4-93e3-cba56aa93c03" />
 
 However, this can only be accessed via Tailscale. Your CloudFlare subdomain is still out there, even if you disconnect from the Tailscale network:
 
-<img width="106" height="182" alt="image" src="https://github.com/user-attachments/assets/5ed9c780-84f7-4475-abdf-f7253d88ac59" />
+<img width="206" height="182" alt="image" src="https://github.com/user-attachments/assets/5ed9c780-84f7-4475-abdf-f7253d88ac59" />
 
 
 Overall,
