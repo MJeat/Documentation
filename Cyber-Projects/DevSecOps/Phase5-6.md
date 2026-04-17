@@ -80,6 +80,16 @@ rclone copy test.txt ubuntu-king-backup-r2:ubuntu-king-backup
 ```
 You shouldn't see any output or error here. Then, go back to the R2 dashboard and find your test.txt.
 
+## Structure Explain
+
+`rclone copy test.txt ubuntu-king-backup-r2:ubuntu-king-backup`
+- You upload test.txt from your OS
+- `ubuntu-king-backup-r`: this is your rclone name. Can check it out at
+```
+~/.config/rclone/rclone.conf
+```
+- `ubuntu-king-backup`: this is your R2 bucket name
+
 ## Step 6 - Upload via scripts (Manual) 
 Location: `~/`
 - Create a bash script called `ubuntu-king-backup.sh` that takes logs from `auth.log`:
@@ -96,8 +106,68 @@ Lastly, check your R2 dashboard.
 
 <img width="1086" height="196" alt="image" src="https://github.com/user-attachments/assets/78fb0382-8193-4989-b60d-57bf4a431db6" />
 
+## Better version:
 
+```
+#!/bin/bash
 
+# Configuration
+REMOTE="ubuntu-king-backup-r2:ubuntu-king-backup"
+TIMESTAMP=$(date +"%Y-%m-%d")
+RETENTION="10d"  # Change to 10d for 10 days
+
+# 1. Copy the logs into a dated folder on R2
+rclone copy /var/log/auth.log $REMOTE/logs/$TIMESTAMP/ --no-check-bucket
+rclone copy /var/log/access.log $REMOTE/logs/$TIMESTAMP/ --no-check-bucket
+
+# 2. Automation: Delete backups older than your retention period
+rclone delete $REMOTE/logs/ --min-age $RETENTION --no-check-bucket
+```
+
+## Step 6 - Upload via scripts (Automation) 
+
+We are gonna use crontab for this.
+```
+sudo crontab -e
+```
+Add this at the bottom:
+`59 11 * * * /root/automation-ubuntu-king-backup.sh`
+- So, every single morning at 11:59 AM, my VPS will trigger the backup.
+
+Of this script:
+```
+# Edit this file to introduce tasks to be run by cron.
+# 
+# Each task to run has to be defined through a single line
+# indicating with different fields when the task will be run
+# and what command to run for the task
+# 
+# To define the time you can provide concrete values for
+# minute (m), hour (h), day of month (dom), month (mon),
+# and day of week (dow) or use '*' in these fields (for 'any').
+# 
+# Notice that tasks will be started based on the cron's system
+# daemon's notion of time and timezones.
+# 
+# Output of the crontab jobs (including errors) is sent through
+# email to the user the crontab file belongs to (unless redirected).
+# 
+# For example, you can run a backup of all your user accounts
+# at 5 a.m every week with:
+# 0 5 * * 1 tar -zcf /var/backups/home.tgz /home/
+# 
+# For more information see the manual pages of crontab(5) and cron(8)
+# 
+# m h  dom mon dow   command
+59 11 * * * /root/automation-ubuntu-king-backup.sh
+```
+
+## Crontab Structure Explain:
+
+Think of it as: "At [Minute] [Hour] [Day of Month] [Month] [Day of Week], do [This Command]."
+- `Hour` is a 24-hour clock
+- `*` means EVERY
+  - `*` in the Month slot means Every month 
 
 # Phase 6: 
 
