@@ -16,7 +16,11 @@ R2 is S3-compatible, meaning any tool that works with Amazon S3 also works with 
 
 ## Step 2 — Generate R2 API credentials
 
-- In R2 dashboard → Manage R2 API tokens → Create API token
+- In R2 dashboard → Manage R2 API tokens → Create API token (See Image. It's at the bottom right.)
+
+<img width="1202" height="535" alt="image" src="https://github.com/user-attachments/assets/bd2aeda9-7331-49f8-ad9f-2d14e3d784bb" />
+
+
 - Set permissions to "Object Read & Write" scoped to your bucket
 - Save the Access Key ID and Secret Access Key — you only see the secret once
 - Note your R2 endpoint URL — format is `https://ACCOUNT_ID.r2.cloudflarestorage.com`
@@ -37,7 +41,7 @@ rclone config
 - Endpoint: your R2 endpoint URL
 - Leave region blank
 
-This creates a config at ~/.config/rclone/rclone.conf
+This creates a config at `~/.config/rclone/rclone.conf`
 
 ## Step 5 — Test the connection
 ```
