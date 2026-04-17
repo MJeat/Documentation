@@ -18,11 +18,16 @@ R2 is S3-compatible, meaning any tool that works with Amazon S3 also works with 
 
 - In R2 dashboard → Manage R2 API tokens → Create API token (See Image. It's at the bottom right.)
 
-<img width="1202" height="535" alt="image" src="https://github.com/user-attachments/assets/bd2aeda9-7331-49f8-ad9f-2d14e3d784bb" />
+<img width="1002" height="435" alt="image" src="https://github.com/user-attachments/assets/bd2aeda9-7331-49f8-ad9f-2d14e3d784bb" />
 
 
 - Set permissions to "Object Read & Write" scoped to your bucket
-- Save the Access Key ID and Secret Access Key — you only see the secret once
+- For security purposes, choose `Specify bucket(s)` as `Apply to specific buckets only`. But for personal VPS or production, you can pick `Apply to all buckets in this account (including newly created buckets)`
+
+However, for this project, I picked the secured option.
+
+- Click `Create Account API Token`
+- Save the Access Key ID and Secret Access Key — you only see the secret once. Or simply save all tokens in the password manager.
 - Note your R2 endpoint URL — format is `https://ACCOUNT_ID.r2.cloudflarestorage.com`
 
 ## Step 3 — Install Rclone on your VPS
@@ -33,24 +38,48 @@ curl https://rclone.org/install.sh | sudo bash
 ```
 rclone config
 ```
-- Choose `n` for new remote
-- Name it: r2
-- Storage type: s3 (R2 is S3-compatible)
-- Provider: Cloudflarw
-- Enter your Access Key ID and Secret Access Key
-- Endpoint: your R2 endpoint URL
-- Leave region blank
+Follow these exact inputs:
+- `n)` New remote
+- name: `ubuntu-king-backup-r2`
+- Storage Type: Type `s3` (or find the number for Amazon S3 Compliant Storage)
+- provider: Choose `Cloudflare` (should be option 6 or similar)
+- env_auth: `false`
+- access_key_id: `(Paste your Access Key ID)`
+- secret_access_key: `(Paste your Secret Access Key)`
+- region: `auto` (or leave blank)
+- endpoint: `(Paste that https://... link you copied)`
+- location_constraint: `(Leave blank)`
+- acl: `private`
 
 This creates a config at `~/.config/rclone/rclone.conf`
 
+Since we chose `Specify bucket(s)` as `Apply to specific buckets only`, we have to add an extra line in the `rclone.conf`
+```
+~/.config/rclone/rclone.conf
+```
+
+Write this like this:
+
+```
+[ubuntu-king-backup-r2]
+no_check_bucket = true          # This is where you should add
+type = s3
+provider = Cloudflare
+access_key_id = {KEY}
+secret_access_key = {KEY}
+region = auto
+endpoint = {KEY}
+```
+We add this because we don't want Cloudflare to check for the account-level privilege. No politeness, just get straight to work. It's safe.
+
 ## Step 5 — Test the connection
 ```
-rclone ls r2:vps-backups
-rclone copy /etc r2:vps-backups/test/ --progress
+rclone config show ubuntu-king-backup-r2
+echo "Ghost Mode Backup Test" > test.txt
+rclone copy test.txt ubuntu-king-backup-r2:ubuntu-king-backup
 ```
-- `rclone ls` - lists the bucket contents
-- `rclone` - copies uploads a directory
-- `--progress` - shows you transfer speed and file counts in real time
+You shouldn't see any output or error here. Then, go back to the R2 dashboard and find your test.txt.
+
 
 # Phase 6: 
 
