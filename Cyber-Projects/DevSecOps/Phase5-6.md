@@ -80,6 +80,24 @@ rclone copy test.txt ubuntu-king-backup-r2:ubuntu-king-backup
 ```
 You shouldn't see any output or error here. Then, go back to the R2 dashboard and find your test.txt.
 
+## Step 6 - Upload via scripts (Manual) 
+Location: `~/`
+- Create a bash script called `ubuntu-king-backup.sh` that takes logs from `auth.log`:
+```
+#!/bin/bash
+rclone copy /var/log/auth.log ubuntu-king-backup-r2:ubuntu-king-backup
+```
+Then:
+```
+chmod 777 ubuntu-king-backup.sh
+./ubuntu-king-backup.sh
+```
+Lastly, check your R2 dashboard.
+
+<img width="1086" height="196" alt="image" src="https://github.com/user-attachments/assets/78fb0382-8193-4989-b60d-57bf4a431db6" />
+
+
+
 
 # Phase 6: 
 
