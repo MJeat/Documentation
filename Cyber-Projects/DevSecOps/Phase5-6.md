@@ -353,7 +353,7 @@ sudo nano /usr/local/bin/set-traffic-shaper.sh
 ```
 
 **Paste this in (adjusted for your ports):**
-```
+```bash
 #!/bin/bash
 # 1. Configuration
 INTERFACE="eth0"
@@ -392,7 +392,7 @@ sudo chmod +x /usr/local/bin/set-traffic-shaper.sh
 ### Step 2: Create the Systemd Service
 This tells Ubuntu to run that script every time the server boots up.
 
-```
+```bash
 sudo nano /etc/systemd/system/traffic-shaper.service
 ```
 
