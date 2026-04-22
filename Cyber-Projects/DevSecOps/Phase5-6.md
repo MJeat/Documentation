@@ -416,7 +416,7 @@ WantedBy=multi-user.target
 ### Step 3: Enable and Start
 Run these commands to activate the automation:
 
-```
+```bash
 # Reload systemd to see the new file
 sudo systemctl daemon-reload
 
