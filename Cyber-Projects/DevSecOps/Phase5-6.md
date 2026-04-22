@@ -286,8 +286,10 @@ tc qdisc add dev eth0 root netem delay 100ms loss 5%
 
 After applying each rule, ping a remote server and watch the RTT change:
 ```
-ping google.com
+ping google.com -c 4
 ```
+
+Note for the `loss 5%`: it means it has a 5% chance that there will be a packet loss. If you want to see that 5%, you have to ping more: `ping google.com -c 50`
 
 ## Step 8 — Remove tc rules
 ```
@@ -301,6 +303,16 @@ tc qdisc show dev eth0
 tc class show dev eth0
 tc filter show dev eth0
 ```
+
+Before setting the limitations:
+
+<img width="999" height="91" alt="image" src="https://github.com/user-attachments/assets/7270ff34-1d30-40d7-aaf7-1e3056e66c49" />
+
+
+After setting the limitations:
+
+<img width="592" height="110" alt="image" src="https://github.com/user-attachments/assets/6306cf9f-edc8-4f6d-9187-dae60c64442f" />
+
 
 ## Step 10 — Advanced: prioritize traffic with HTB
 
