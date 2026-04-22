@@ -280,7 +280,7 @@ tc qdisc add dev eth0 root netem delay 100ms 20ms
 # Add 10% packet loss
 tc qdisc add dev eth0 root netem loss 10%
 
-# Combine delay + packet loss
+# Combine delay + packet loss | Can use this structure to add-on multiple limitations such as delay and loss
 tc qdisc add dev eth0 root netem delay 100ms loss 5%
 ```
 
