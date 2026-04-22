@@ -169,7 +169,233 @@ Think of it as: "At [Minute] [Hour] [Day of Month] [Month] [Day of Week], do [Th
 - `*` means EVERY
   - `*` in the Month slot means Every month 
 
-# Phase 6: 
+# Phase 6: Bandwidth Monitoring + Traffic Shaping (tc / vnStat)
+
+
+Here's the full breakdown for Project 07.
+
+---
+
+## Project 07 — Bandwidth Monitoring + Traffic Shaping (tc / vnStat)
+
+### What this project is
+
+I wanted to understand bandwidth and throughput better — this project is built exactly for that. Rather than just reading theory, you'll use real Linux tools to **observe**, **measure**, and **actively control** network traffic on your VPS.
+
+There are two halves to this project. The first half is **monitoring** — using vnStat to track how much data your server sends and receives over time. The second half is **traffic shaping** — using Linux `tc` (traffic control) to actually limit, delay, or prioritize traffic on your network interface, so I can see firsthand how bandwidth constraints affect throughput.
+
+### Bandwidth vs throughput — the core concept
+
+These two terms get confused constantly. Here's the clearest way to think about them:
+
+- **Bandwidth** is the maximum capacity of a pipe — how wide it is. Your DigitalOcean Droplet has a 1Gbps network interface. That's the bandwidth ceiling.
+- **Throughput** is how much data actually flows through the pipe at a given moment — how full it is. If you're transferring a file and seeing 50Mbps, that's your throughput. It's always ≤ bandwidth.
+
+The gap between bandwidth and throughput is caused by things like packet loss, latency, protocol overhead, congestion, and CPU limits. This project lets you manufacture those conditions artificially so you can observe exactly what happens.
+
+## Step 1 — Install vnStat
+```
+apt install vnstat -y
+systemctl enable vnstat
+systemctl start vnstat
+```
+- vnStat passively monitors your network interface and stores historical stats in a database
+- It tracks hourly, daily, monthly, and total traffic
+- Very lightweight — runs as a daemon, barely uses any resources
+
+## Step 2 — Check which interface to monitor**
+```
+ip link show
+```
+- Your main interface is usually `eth0` or `ens3` on DigitalOcean
+- vnStat auto-detects it but confirm: `vnstat --iflist`
+
+## Step 3 — Read vnStat reports**
+```
+vnstat                    # summary
+vnstat -d                 # daily breakdown
+vnstat -m                 # monthly breakdown
+vnstat -h                 # hourly breakdown (last 24h)
+vnstat -l                 # live traffic monitor (like top, but for bandwidth)
+vnstat --live             # same, with a real-time graph
+```
+
+Leave `vnstat -l` running while you do other things on the server — watch the numbers change as traffic flows. This builds intuition for what "normal" traffic looks like on your server.
+
+## Step 4 — Install iproute2 (tc)**
+```
+apt install iproute2 -y
+```
+`tc` (traffic control) is part of the Linux kernel's networking stack. It lets you attach queuing disciplines (qdiscs) to network interfaces that control how packets are sent.
+
+## Step 5 — Baseline speed test (before any shaping)
+```
+apt install speedtest-cli -y
+speedtest-cli
+```
+Record your baseline download/upload speeds. This is your reference point.
+
+### Testing with Ping
+
+- First, try to ping `8.8.8.8` and note the `ms`
+- Next, paste this command:
+
+```
+sudo tc qdisc add dev eth0 root netem delay 100ms
+```
+- Then, ping again and see the `ms` difference
+- To remove the delay limit:
+
+```
+sudo tc qdisc del dev eth0 root
+```
+
+## Step 6 — Apply a bandwidth limit with tc
+
+Limit outbound traffic to 10Mbps on your main interface:
+```
+tc qdisc add dev eth0 root tbf rate 10mbit burst 32kbit latency 400ms
+```
+
+Breaking this down:
+- `qdisc add dev eth0 root` — attach a queuing discipline to eth0
+- `tbf` — Token Bucket Filter — the simplest rate limiter
+- `rate 10mbit` — maximum send rate
+- `burst 32kbit` — how much can burst above the rate briefly
+- `latency 400ms` — max time a packet can wait in the queue
+
+Run speedtest again — you'll see throughput capped at ~10Mbps even though your interface supports 1Gbps. That's bandwidth limiting in action.
+
+## Step 7 — Add artificial latency with netem
+
+`netem` (network emulator) lets you simulate bad network conditions:
+
+```
+# Add 100ms delay to all outgoing packets
+tc qdisc add dev eth0 root netem delay 100ms
+
+# Add 100ms delay with 20ms jitter (realistic variation)
+tc qdisc add dev eth0 root netem delay 100ms 20ms
+
+# Add 10% packet loss
+tc qdisc add dev eth0 root netem loss 10%
+
+# Combine delay + packet loss
+tc qdisc add dev eth0 root netem delay 100ms loss 5%
+```
+
+After applying each rule, ping a remote server and watch the RTT change:
+```
+ping google.com
+```
+
+## Step 8 — Remove tc rules
+```
+tc qdisc del dev eth0 root
+```
+Always clean up after testing — you don't want a 10Mbps cap running permanently on your production server.
+
+## Step 9 — View current tc rules
+```
+tc qdisc show dev eth0
+tc class show dev eth0
+tc filter show dev eth0
+```
+
+## Step 10 — Advanced: prioritize traffic with HTB
+
+HTB (Hierarchical Token Bucket) lets you create traffic classes with different priorities:
+
+```
+# Create root HTB qdisc
+tc qdisc add dev eth0 root handle 1: htb default 30
+
+# High priority class (SSH, DNS) — guaranteed 5Mbps, max 100Mbps
+tc class add dev eth0 parent 1: classid 1:10 htb rate 5mbit ceil 100mbit
+
+# Low priority class (backups, bulk) — guaranteed 1Mbps, max 10Mbps
+tc class add dev eth0 parent 1: classid 1:30 htb rate 1mbit ceil 10mbit
+
+# Filter SSH traffic (port 22) into high priority class
+tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 \
+  match ip dport 22 0xffff flowid 1:10
+```
+
+This ensures SSH traffic always gets bandwidth, even when your Rclone backup is saturating the connection — a real-world scenario you'll encounter.
+
+---
+
+### What I learned
+
+- The precise difference between bandwidth, throughput, latency, and jitter — with hands-on evidence
+- How Linux's traffic control subsystem works — qdiscs, classes, filters
+- How Token Bucket Filter (TBF) rate limiting works mathematically
+- How netem simulates real-world network conditions — used by engineers to test app resilience
+- How HTB traffic shaping prioritizes certain traffic over others
+- How vnStat collects and presents historical bandwidth data
+- Why throughput is almost always less than bandwidth and what causes the gap
+- How packet loss disproportionately destroys TCP throughput (you'll see this clearly with netem)
+
+---
+
+### Key concepts you'll understand after this
+
+| Concept | What you'll understand |
+|---|---|
+| Bandwidth | The pipe capacity — maximum possible rate |
+| Throughput | Actual data rate achieved — always ≤ bandwidth |
+| Latency | Time for a packet to travel from A to B |
+| Jitter | Variation in latency — causes problems for real-time apps |
+| Packet loss | Dropped packets — TCP retransmits cause severe throughput drops |
+| qdisc | Queuing discipline — the algorithm controlling packet scheduling |
+| TBF | Token bucket filter — simplest rate limiter |
+| HTB | Hierarchical token bucket — prioritized traffic shaping |
+| netem | Network emulator — artificial delay, loss, corruption |
+| vnStat | Passive bandwidth logger — historical traffic stats |
+
+---
+
+### Experiments to run
+
+These are the most educational things you can do once the tools are set up:
+
+1. **Latency vs throughput** — add 200ms netem delay, run a file transfer, watch throughput collapse. TCP's congestion window shrinks under high latency.
+2. **Packet loss cliff** — add 1% loss, measure throughput. Then 5% loss. Then 10%. The throughput drop is non-linear and dramatic.
+3. **Backup vs SSH priority** — start an `rclone sync` (bulk transfer), then SSH in. Without HTB, SSH feels laggy. With HTB priority rules, SSH stays snappy.
+4. **Monthly usage tracking** — leave vnStat running for a week and check `vnstat -m`. You'll see exactly how much data your server uses — useful for staying within DigitalOcean's 1TB/mo transfer limit.
+
+---
+
+### Estimated cost
+
+| Item | Cost |
+|---|---|
+| vnStat | Free, open source |
+| iproute2 / tc | Free, built into Linux kernel |
+| DigitalOcean Droplet (existing) | $6/mo |
+| **Total** | **~$7/mo (no change)** |
+
+---
+
+### Gotchas to watch out for
+
+- **tc rules don't survive reboots** — they're applied in memory only. If you want permanent rules, add them to a startup script or use `tc-persistent` packages.
+- **Apply tc to the right interface** — double-check with `ip link show`. Applying to the wrong interface does nothing or breaks things.
+- **netem applies to outbound traffic only** — tc shapes egress (outgoing) traffic by default. Incoming traffic shaping requires ingress qdiscs which are more complex.
+- **Don't leave rate limits on your production server** — always remove test rules with `tc qdisc del dev eth0 root` after experimenting.
+- **vnStat needs time to collect data** — it won't show useful stats immediately. Let it run for at least a few hours before reading reports.
+- **DigitalOcean's 1TB/mo transfer limit** — your Basic Droplet includes 1TB outbound transfer/month. vnStat helps you track this so you don't get surprise overage charges ($0.01/GB after 1TB).
+
+---
+
+### How this connects to later projects
+Understanding bandwidth and traffic shaping directly feeds into Project 08 (ELK) and Project 09 (Honeypot) — both generate significant log and network data. Knowing how to read traffic patterns with vnStat and shape traffic with tc means you can spot anomalies (a honeypot getting hammered, a backup saturating your connection) and react intelligently. It also builds the mental model for understanding network metrics in Grafana dashboards.
+
+
+
+
+
+
 
 
 
