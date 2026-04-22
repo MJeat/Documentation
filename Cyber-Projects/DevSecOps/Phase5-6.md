@@ -340,6 +340,110 @@ This ensures SSH traffic always gets bandwidth, even when your Rclone backup is 
 
 Check this file location: [Location]()
 
+## Question
+> Does it survive upon reboots? No, so how to make it permanent?
+
+Since Linux doesn't have a built-in `tc-save` command (like `iptables-save`), the "Ghost Mode" way is to create a small **Systemd Service**. This ensures the rules are applied automatically after a reboot, as soon as the network is ready.
+
+### Step 1: Create the Traffic Shaper Script
+First, we put all your rules into a clean script.
+
+```
+sudo nano /usr/local/bin/set-traffic-shaper.sh
+```
+
+**Paste this in (adjusted for your ports):**
+```
+#!/bin/bash
+# 1. Configuration
+INTERFACE="eth0"
+
+# 2. Clear existing rules
+tc qdisc del dev $INTERFACE root 2>/dev/null
+
+# 3. Define the Root (HTB)
+# We set default lane to 20
+tc qdisc add dev $INTERFACE root handle 1: htb default 20
+
+# 4. Create High-Priority Class (1:10)
+# Guaranteed 100mbit, can burst to 1gbit
+tc class add dev $INTERFACE parent 1: classid 1:10 htb rate 100mbit ceil 1gbit prio 1
+
+# 5. Create Bulk Class (1:20)
+# Hard cap at 50mbit to prevent server choking
+tc class add dev $INTERFACE parent 1: classid 1:20 htb rate 10mbit ceil 50mbit prio 2
+
+# 6. Filters (Assigning Ports to High-Priority)
+# SSH
+tc filter add dev $INTERFACE protocol ip parent 1:0 prio 1 u32 match ip dport 22 0xffff flowid 1:10
+# HTTPS (Web Traffic)
+tc filter add dev $INTERFACE protocol ip parent 1:0 prio 1 u32 match ip dport 443 0xffff flowid 1:10
+# Cloudflare Tunnel (Standard port)
+tc filter add dev $INTERFACE protocol ip parent 1:0 prio 1 u32 match ip dport 7844 0xffff flowid 1:10
+```
+
+**Make it executable:**
+```
+sudo chmod +x /usr/local/bin/set-traffic-shaper.sh
+```
+
+---
+
+### Step 2: Create the Systemd Service
+This tells Ubuntu to run that script every time the server boots up.
+
+```
+sudo nano /etc/systemd/system/traffic-shaper.service
+```
+
+**Paste this in:**
+```ini
+[Unit]
+Description=Apply Traffic Shaping tc rules
+After=network.target
+
+[Service]
+Type=oneshot
+ExecStart=/usr/local/bin/set-traffic-shaper.sh
+RemainAfterExit=yes
+
+[Install]
+WantedBy=multi-user.target
+```
+
+---
+
+### Step 3: Enable and Start
+Run these commands to activate the automation:
+
+```
+# Reload systemd to see the new file
+sudo systemctl daemon-reload
+
+# Enable it so it runs on every boot
+sudo systemctl enable traffic-shaper.service
+
+# Start it now for the first time
+sudo systemctl start traffic-shaper.service
+```
+
+---
+
+### 🛡️ How to manage it going forward
+
+* **To check if it's working:**
+    `tc qdisc show dev eth0` (You should see `htb` as the root).
+* **To change the rules:**
+    Just edit `/usr/local/bin/set-traffic-shaper.sh` and then run `sudo systemctl restart traffic-shaper.service`.
+* **To remove it permanently:**
+    ```
+    sudo systemctl disable traffic-shaper.service
+    sudo tc qdisc del dev eth0 root
+    ```
+
+### Why this is the "Best" way:
+By using `RemainAfterExit=yes`, the service stays in an "active" state in your system status. If you ever wonder if your traffic shaping is on, you can just run `systemctl status traffic-shaper` and see a nice green light.
+
 ---
 
 ### What I learned
