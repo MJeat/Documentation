@@ -170,14 +170,6 @@ Think of it as: "At [Minute] [Hour] [Day of Month] [Month] [Day of Week], do [Th
   - `*` in the Month slot means Every month 
 
 # Phase 6: Bandwidth Monitoring + Traffic Shaping (tc / vnStat)
-
-
-Here's the full breakdown for Project 07.
-
----
-
-## Project 07 — Bandwidth Monitoring + Traffic Shaping (tc / vnStat)
-
 ### What this project is
 
 I wanted to understand bandwidth and throughput better — this project is built exactly for that. Rather than just reading theory, you'll use real Linux tools to **observe**, **measure**, and **actively control** network traffic on your VPS.
