@@ -1,4 +1,4 @@
-# Project 07 — Bandwidth Monitoring + Traffic Shaping (tc / vnStat) (Explained)
+# Project 6 — Bandwidth Monitoring + Traffic Shaping (tc / vnStat) (Explained)
 
 This is the "Advanced Logic" of Linux networking. To understand this, imagine your network card (`eth0`) is a **Post Office**. 
 
