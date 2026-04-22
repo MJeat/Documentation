@@ -378,7 +378,7 @@ tc class add dev $INTERFACE parent 1: classid 1:20 htb rate 10mbit ceil 50mbit p
 tc filter add dev $INTERFACE protocol ip parent 1:0 prio 1 u32 match ip dport 22 0xffff flowid 1:10
 # HTTPS (Web Traffic)
 tc filter add dev $INTERFACE protocol ip parent 1:0 prio 1 u32 match ip dport 443 0xffff flowid 1:10
-# Cloudflare Tunnel (Standard port)
+# Cloudflare Tunnel (Standard port) for web visitors for fast speed.
 tc filter add dev $INTERFACE protocol ip parent 1:0 prio 1 u32 match ip dport 7844 0xffff flowid 1:10
 ```
 
