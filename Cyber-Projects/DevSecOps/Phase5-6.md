@@ -304,13 +304,20 @@ tc class show dev eth0
 tc filter show dev eth0
 ```
 
-Before setting the limitations:
-
+**Before setting the limitations:**
 <img width="999" height="91" alt="image" src="https://github.com/user-attachments/assets/7270ff34-1d30-40d7-aaf7-1e3056e66c49" />
 
+**1. `qdisc fq_codel 0: root`**
+- `fq_codel` (Fair Queuing Controlled Delay): This is the "Smart Traffic Guard." Its job is to make sure one single massive download (like your Rclone backup) doesn't "choke" small, fast packets (like your SSH keystrokes). It keeps things snappy.
+- `root`: This is the boss rule sitting at the very top of your network interface.
 
-After setting the limitations:
+**2. The Technical Stats**
+- `limit 10240p`: This is the "Waiting Room." It can hold 10,240 packets before it starts throwing new ones in the trash because it's too full.
+- `flows 1024`: It can track 1,024 different "conversations" (connections) at once and try to give them all equal turns.
+- `target 5ms / interval 100ms`: This is the "Lag Detector." If a packet stays in the waiting room longer than 5ms over a 100ms window, fq_codel identifies it as a "clog" and starts managing it more aggressively to keep latency low.
+- `ecn` (Explicit Congestion Notification): It tries to tell the sender "Hey, slow down!" before it's forced to drop the packet entirely.
 
+**After setting the limitations:**
 <img width="592" height="110" alt="image" src="https://github.com/user-attachments/assets/6306cf9f-edc8-4f6d-9187-dae60c64442f" />
 
 
@@ -319,21 +326,27 @@ After setting the limitations:
 HTB (Hierarchical Token Bucket) lets you create traffic classes with different priorities:
 
 ```
-# Create root HTB qdisc
-tc qdisc add dev eth0 root handle 1: htb default 30
+# 1. Clear existing rules
+sudo tc qdisc del dev eth0 root 2>/dev/null
 
-# High priority class (SSH, DNS) — guaranteed 5Mbps, max 100Mbps
-tc class add dev eth0 parent 1: classid 1:10 htb rate 5mbit ceil 100mbit
+# 2. Add a root HTB (Hierarchical Token Bucket)
+sudo tc qdisc add dev eth0 root handle 1: htb default 20
 
-# Low priority class (backups, bulk) — guaranteed 1Mbps, max 10Mbps
-tc class add dev eth0 parent 1: classid 1:30 htb rate 1mbit ceil 10mbit
+# 3. Create a High-Priority Class (for SSH/VPN) - 100mbps guaranteed
+sudo tc class add dev eth0 parent 1: classid 1:10 htb rate 100mbit ceil 1gbit prio 1
 
-# Filter SSH traffic (port 22) into high priority class
-tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 \
-  match ip dport 22 0xffff flowid 1:10
+# 4. Create a Bulk Class (for Backups/Nginx) - 10mbps limit
+sudo tc class add dev eth0 parent 1: classid 1:20 htb rate 10mbit ceil 50mbit prio 2
+
+# 5. Filter traffic into classes (Assign SSH port 22 to High-Priority)
+sudo tc filter add dev eth0 protocol ip parent 1:0 prio 1 u32 match ip dport 22 0xffff flowid 1:10
 ```
 
 This ensures SSH traffic always gets bandwidth, even when your Rclone backup is saturating the connection — a real-world scenario you'll encounter.
+
+### HTB Explanation
+
+Check this file location: [Location]()
 
 ---
 
