@@ -311,6 +311,25 @@ Now that Nginx is "clean" and listening for the new name on Port 80, run Certbot
 sudo certbot --nginx -d new.subdomain.com
 ```
 
+### Special (Nginx Containers):
+If you run nginx as a Docker container, do the following:
+- **Step 1**: Install `certbot`
+- **Step 2**: Make sure to enable ports 80 and 443 on the VPS Firewall and ufw
+- **Step 3**: Stop all host-level Nginx service
+- **Step 4**: Use this command line instead
+```
+sudo certbot certonly --standalone -d login.breadtox.win
+```
+- **Step 5**: Map your `nginx.conf` and `docker-compose.yml` to the certbot location where certifications sit (e.g., `/etc/letsencrypt/live/`) <br/>
+  
+> Explanation: By using --standalone, you are telling Certbot: "Do not try to find, configure, or talk to any web server on this machine. Just handle the network handshake yourself and download the raw certificate files straight to my host folder."
+```
+METHOD A: certbot --nginx
+[Certbot] ---> Looks for Host /etc/nginx/ ---> Try to edit files ---> [CRASH: Nginx is stopped/hidden]
+
+METHOD B: certbot certonly --standalone
+[Certbot] ---> Spins up a temporary 5-second listener ---> Downloads Certs ---> Saves to /etc/letsencrypt/
+```
 
 ### 2.4. Nginx - Internal Server Files (Host's Nginx + Docker Containers)
 This part will set up a new nginx separately from Docker's compose files and Dockerfiles. Nothing should change much. The only change is a small change in the nginx conf file. 
