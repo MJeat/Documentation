@@ -119,8 +119,8 @@ docker compose logs -f traefik
 # How To Renew and Remove Cert? Disable HTTPS
 
 > i have questions. So it renew my certs automatically? right? how long will it renew? 90 days? what if i wanna modify to 60 days instead? 
+> Also, what if i wanna remove the cert? do i just delete the acme.json and the 443 commands and volumes?
 
-Also, what if i wanna remove the cert? do i just delete the acme.json and the 443 commands and volumes?
 You are assuming you can manually dictate the renewal interval, but you cannot arbitrarily override the 90-day lifetime of a standard Let's Encrypt certificate because the certificate authority, not Traefik, sets this hard limit.
 
 ### How Traefik Handles Certificate Renewal
