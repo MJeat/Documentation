@@ -37,6 +37,7 @@ If App A requires **Node v14** and App B requires **Node v22**, running them dir
 If your static site or API experiences a sudden spike in traffic, you cannot easily clone a host-running application on the fly.
 
 * [Certain] With immutable containers, you can tell Traefik or Docker Compose to scale your service from 1 instance to 10 instances in less than a second. [Likely] Because they don't rely on local host bind-mounts for their code, they spin up instantly and Traefik automatically balances the incoming traffic across all of them.
+* With Traefik, we can use other third-party software, such as `Kubernetes` or a plugin called `Sablier`, to auto-scale instances when the traffic is crazy heavy.
 
 ---
 
