@@ -1,3 +1,5 @@
+# Phase 3: Create HTTPS Using Let's Encrypt 
+
 [Certain] Moving straight to SSL configuration without first confirming your DNS A-record points to your VPS IP is a recipe for instant Let's Encrypt rate-limiting blocks.
 
 Before writing code, you must create a DNS **A record** in your domain provider’s dashboard (e.g., Namecheap, Cloudflare, GoDaddy).
@@ -114,8 +116,37 @@ docker compose logs -f traefik
 ```
 
 ---
+# How To Renew and Remove Cert? Disable HTTPS
+
+You are assuming you can manually dictate the renewal interval, but you cannot arbitrarily override the 90-day lifetime of a standard Let's Encrypt certificate because the certificate authority, not Traefik, sets this hard limit.
+
+### How Traefik Handles Certificate Renewal
+
+[Certain] Standard Let's Encrypt certificates are valid for exactly 90 days. [Certain] Traefik automatically manages the renewal of these certificates in the background.
+
+However, [Certain] Traefik's internal logic is designed to trigger the renewal process when a certificate has **30 days** remaining before expiration. Consequently, Traefik already automatically renews your certificates at the 60-day mark of their lifespan. [Likely] This is exactly the timing window you are trying to configure, meaning no manual modifications to the renewal interval are necessary or possible.
+
+---
+
+### Removing a Certificate Safely
+
+I disagree because deleting `acme.json`, the port 443 configurations, and your volumes is a destructive overkill that will completely break HTTPS for all of your services, not just remove a single certificate.
+
+Here's what I'd do instead:
+
+1. **Remove the Router TLS Association:**
+[Certain] Traefik only generates and serves certificates for domains bound to routers with a defined Certificate Resolver. If you want to stop securing a specific domain, simply remove the `certresolver` label or configuration block from that specific container or service. For example, delete the label:
+`traefik.http.routers.your-router-name.tls.certresolver=your-resolver`
+2. **Clean up `acme.json` (Optional):**
+If you want to completely purge the old domain's certificate data from Traefik's storage without losing your other certificates or your Let's Encrypt account keys:
+* Stop the Traefik container.
+* Create a backup of your `acme.json` file.
+* Open the original `acme.json` file, find the `"Certificates"` array under your resolver block, and delete the specific JSON object block containing the unwanted domain.
+* Save the file and restart Traefik.
 
 
-[Certain] Once your DNS record propagation is complete and you run this configuration, Traefik will silently fetch a valid certificate, write it to `acme.json`, and secure both applications with a green lock icon in your web browser.
 
-Please provide the exact subdomain you set up and let me know when you have updated the compose file so we can verify the SSL negotiation before moving on to Phase 4.
+The risk in your approach of nuking the entire `acme.json` file, your volumes, and the 443 entrypoint is that you destroy your persistent ACME account keys and globally disable secure traffic. When Traefik restarts, it will be forced to register a brand-new ACME account and request fresh certificates for *every single domain* configured on your server. This can easily trigger Let's Encrypt's strict rate limits (currently 5 duplicate certificates per week), locking your domains out of HTTPS entirely for up to 7 days.
+
+
+
