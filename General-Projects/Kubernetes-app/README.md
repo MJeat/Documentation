@@ -56,13 +56,13 @@ Run these commands on your server to create 2 GB of virtual memory:
 
 ```bash
 # Create 2GB swap file
-fallocate -l 2G /swapfile
-chmod 600 /swapfile
-mkswap /swapfile
-swapon /swapfile
+sudo fallocate -l 2G /swapfile
+sudo chmod 600 /swapfile
+sudo mkswap /swapfile
+sudo swapon /swapfile
 
 # Make swap permanent after reboot
-echo '/swapfile none swap sw 0 0' | tee -a /etc/fstab
+sudo echo '/swapfile none swap sw 0 0' | tee -a /etc/fstab
 ```
 
 ### Step 1.3: Install K3s (Your Kubernetes Engine)
