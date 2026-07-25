@@ -81,11 +81,26 @@ Run this command on your server:
 curl -sfL https://get.k3s.io | INSTALL_K3S_EXEC="--disable traefik" sh -
 ```
 
-### Step 1.4: Verify your Kubernetes Cluster
+### Step 1.4: Verify your Kubernetes Cluster & change the permission to the user, not root
 
 Check if your cluster is alive and running:
 
-```bash
+```
+# Create the .kube directory if it doesn't exist
+mkdir -p ~/.kube
+
+# Copy the kubeconfig to your home directory
+sudo cp /etc/rancher/k3s/k3s.yaml ~/.kube/config
+
+# Give ownership to your user
+sudo chown $(id -u):$(id -g) ~/.kube/config
+
+# Optional but recommended: restrict permissions
+chmod 600 ~/.kube/config
+
+echo 'export KUBECONFIG=~/.kube/config' >> ~/.bashrc
+source ~/.bashrc
+
 kubectl get nodes
 ```
 
