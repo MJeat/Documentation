@@ -62,8 +62,14 @@ sudo mkswap /swapfile
 sudo swapon /swapfile
 
 # Make swap permanent after reboot
-sudo echo '/swapfile none swap sw 0 0' | tee -a /etc/fstab
+echo '/swapfile none swap sw 0 0' | sudo tee -a /etc/fstab
 ```
+
+Confirm with:
+```
+free -h
+```
+See if the Swap is now 2Gi
 
 ### Step 1.3: Install K3s (Your Kubernetes Engine)
 
