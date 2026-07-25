@@ -65,3 +65,53 @@ ls -la /var/lib/rancher/k3s/server/tls/
 | etcd                   | Separate process           | Replaced by SQLite (default)  |
 
 Would you like me to show you the exact commands to inspect each part?
+> yes
+
+Here are the exact commands you can run right now to inspect everything.
+
+### 1. See the main K3s process (this is where everything lives)
+
+```bash
+ps aux | grep k3s | grep -v grep
+```
+
+### 2. See all system pods (control plane related)
+
+```bash
+kubectl get pods -n kube-system -o wide
+```
+
+### 3. Check if the control plane is healthy
+
+```bash
+kubectl get --raw='/readyz?verbose'
+```
+
+### 4. Look at the actual files on disk
+
+```bash
+# Main K3s folder
+sudo ls -la /var/lib/rancher/k3s/
+
+# Server (control-plane) data
+sudo ls -la /var/lib/rancher/k3s/server/
+
+# Database (this is SQLite instead of etcd)
+sudo ls -la /var/lib/rancher/k3s/server/db/
+
+# Certificates
+sudo ls -la /var/lib/rancher/k3s/server/tls/
+
+# Agent (worker) data
+sudo ls -la /var/lib/rancher/k3s/agent/
+```
+
+### 5. See what ports the API server is using
+
+```bash
+sudo ss -tulnp | grep k3s
+```
+
+---
+
+Run them one by one and paste the output if you want me to explain what you’re seeing.
