@@ -1,7 +1,7 @@
 
 # Kubernetes + Traefik + MongoDB Deployment Roadmap
 
-This guide breaks down how to deploy a full-stack web application with a MongoDB database and Traefik router on DigitalOcean using your own self-hosted Kubernetes cluster (K3s).
+This guide breaks down how to deploy a full-stack web application with a MongoDB database, Traefik router, and Automated Load Scaling (HPA) on DigitalOcean using your own self-hosted Kubernetes cluster (K3s).
 
 ## Hardware & Architecture Choice
 
@@ -17,8 +17,8 @@ This guide breaks down how to deploy a full-stack web application with a MongoDB
 
 ## Memory Protection (Swap Memory)
 
-Since 2 GB RAM is a bit tight for Kubernetes + MongoDB + App + Traefik, we will enable a 2 GB Swap file (virtual memory on disk) on your server. This acts as a safety net so MongoDB or Kubernetes won't crash if memory surges temporarily.
-
+Since 2 GB RAM is a bit tight for Kubernetes + MongoDB + App + Traefik, we will enable a 2 GB Swap file (virtual memory on disk) on your server. This acts as a safety net so MongoDB or Kubernetes won't crash if memory surges temporarily or when auto-scaling creates temporary extra containers under heavy load.
+ 
 ## Domain Name Requirement
 
 Do you have a domain name? (e.g., `mycoolapp.com`)
@@ -33,8 +33,8 @@ Do you have a domain name? (e.g., `mycoolapp.com`)
 |  Phase 1: Infrastructure & K3s Cluster Setup (CURRENT PHASE)     |
 |  Phase 2: Traefik Ingress Controller Deployment                 |
 |  Phase 3: Database Setup (MongoDB & Persistent Storage)          |
-|  Phase 4: Web Application Deployment                            |
-|  Phase 5: Security (SSL/HTTPS) & Final Testing                  |
+|  Phase 4: Web Application & Auto-Scaling (HPA) Setup                             |
+|  Phase 5: Traffic Spike Testing, Security (SSL) & Verification                 |
 +-----------------------------------------------------------------+
 ```
 
