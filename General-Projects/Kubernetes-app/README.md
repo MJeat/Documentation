@@ -1,4 +1,4 @@
-```markdown
+
 # Kubernetes + Traefik + MongoDB Deployment Roadmap
 
 This guide breaks down how to deploy a full-stack web application with a MongoDB database and Traefik router on DigitalOcean using your own self-hosted Kubernetes cluster (K3s).
