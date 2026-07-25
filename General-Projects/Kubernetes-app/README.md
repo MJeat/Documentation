@@ -29,13 +29,13 @@ Do you have a domain name? (e.g., `mycoolapp.com`)
 ## The 5-Phase Roadmap Overview
 
 ```
-+-----------------------------------------------------------------+
++------------------------------------------------------------------+
 |  Phase 1: Infrastructure & K3s Cluster Setup (CURRENT PHASE)     |
-|  Phase 2: Traefik Ingress Controller Deployment                 |
+|  Phase 2: Traefik Ingress Controller Deployment                  |
 |  Phase 3: Database Setup (MongoDB & Persistent Storage)          |
-|  Phase 4: Web Application & Auto-Scaling (HPA) Setup                             |
-|  Phase 5: Traffic Spike Testing, Security (SSL) & Verification                 |
-+-----------------------------------------------------------------+
+|  Phase 4: Web Application & Auto-Scaling (HPA) Setup             |
+|  Phase 5: Traffic Spike Testing, Security (SSL) & Verification   |
++------------------------------------------------------------------+
 ```
 
 ## Phase 1: Infrastructure & K3s Cluster Setup
