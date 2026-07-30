@@ -1,3 +1,53 @@
+# Table of Contents
+
+- [Kubernetes + Traefik + MongoDB Deployment Roadmap](#kubernetes--traefik--mongodb-deployment-roadmap)
+  - [Hardware & Architecture Choice](#hardware--architecture-choice)
+  - [Memory Protection (Swap Memory)](#memory-protection-swap-memory)
+  - [Domain Name Requirement](#domain-name-requirement)
+  - [The 5-Phase Roadmap Overview](#the-5-phase-roadmap-overview)
+
+- [Phase 1: Infrastructure & K3s Cluster Setup](#phase-1-infrastructure--k3s-cluster-setup)
+  - [Step 1.1: SSH into your DigitalOcean Droplet](#step-11-ssh-into-your-digitalocean-droplet)
+  - [Step 1.2: Enable Swap Memory](#step-12-enable-swap-memory-safety-net-for-2gb-ram)
+  - [Step 1.3: Install K3s](#step-13-install-k3s-your-kubernetes-engine)
+  - [Step 1.4: Verify Cluster & Fix Permissions](#step-14-verify-your-kubernetes-cluster--change-the-permission-to-the-user-not-root)
+
+- [Phase 2: Traefik Ingress Controller Deployment](#phase-2-traefik-ingress-controller-deployment)
+  - [What is Traefik?](#what-is-traefik)
+  - [Step 2.1: Install Helm](#step-21-install-helm-kubernetes-package-manager)
+  - [Step 2.2: Add the Traefik Repository](#step-22-add-the-traefik-repository)
+  - [Step 2.3: Create Traefik Namespace](#step-23-create-a-dedicated-namespace-for-traefik)
+  - [Step 2.4: Install Traefik using Helm](#step-24-install-traefik-using-helm)
+  - [Step 2.5: Verify Traefik is Running](#step-25-verify-traefik-is-running)
+  - [Phase 2 Explain](#phase-2-explain)
+  - [Helm Inspection Commands](#helm-inspection-commands)
+
+- [Phase 3: Database Setup (MongoDB & Persistent Storage)](#phase-3-database-setup-mongodb--persistent-storage)
+  - [Why Persistent Storage Matters](#why-persistent-storage-matters)
+  - [Step 3.1: Create a Secret for Database Credentials](#step-31-create-a-secret-for-database-credentials)
+  - [Step 3.2: Create the Persistent Volume Claim (PVC)](#step-32-create-the-persistent-volume-claim-pvc)
+  - [Step 3.3: Create the MongoDB Deployment & Service](#step-33-create-the-mongodb-deployment--internal-service)
+  - [Step 3.4: Verify MongoDB and Volume Status](#step-34-verify-mongodb-and-volume-status)
+
+- [Phase 4: Full Deployment (Database + Web App + Ingress + HPA)](#phase-4-full-deployment-database--web-app--ingress--hpa)
+  - [Complete YAML File Map](#complete-yaml-file-map)
+  - [Step 4.1: Create & Apply MongoDB Storage](#step-41-create--apply-mongodb-storage-mongo-pvcyaml)
+  - [Step 4.2: Create & Apply MongoDB Database](#step-42-create--apply-mongodb-database-mongo-deploymentyaml)
+  - [Step 4.3: How & Where to Change the Web App Container Image](#step-43-how--where-to-change-the-web-app-container-image)
+  - [Step 4.4: Deploy the Web Application & Service](#step-44-deploy-the-web-application--service-webapp-deploymentyaml)
+  - [Step 4.5: Expose the Application via Traefik](#step-45-expose-the-application-via-traefik-webapp-ingressyaml)
+  - [Step 4.6: Configure Horizontal Pod Autoscaler](#step-46-configure-horizontal-pod-autoscaler-webapp-hpayaml)
+  - [Step 4.7: How to Inspect Logs](#step-47-how-to-inspect-logs)
+
+- [Phase 5: Traffic Spike Load Testing, SSL & Final Verification](#phase-5-traffic-spike-load-testing-ssl--final-verification)
+  - [Step 5.1: Verify Current Cluster State](#step-51-verify-current-cluster-state)
+  - [Step 5.2: Setting Up Free HTTPS/SSL via Cert-Manager](#step-52-setting-up-free-httpsssl-via-cert-manager)
+  - [Step 5.3: Understanding and Tuning the Scale-Down Cooldown Timer](#step-53-understanding-and-tuning-the-scale-down-cooldown-timer)
+  - [Step 5.4: Terminal Setup for Traffic Spike Load Test](#step-54-terminal-setup-for-traffic-spike-load-test)
+  - [Step 5.5: What You Will Observe During the Spike](#step-55-what-you-will-observe-during-the-spike)
+  - [Zero-Downtime Restarts & Safe Configuration Updates](#6-zero-downtime-restarts--safe-configuration-updates)
+  - [Final Project Checkpoint & Summary](#final-project-checkpoint--summary)
+
 
 # Kubernetes + Traefik + MongoDB Deployment Roadmap
 
