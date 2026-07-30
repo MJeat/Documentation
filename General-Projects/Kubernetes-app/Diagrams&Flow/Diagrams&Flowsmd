@@ -4,7 +4,7 @@ This document details the architecture and traffic flow for the web application 
 
 ## 1. System Architecture Diagram (Mermaid)
 
-
+[System Flow](https://github.com/MJeat/Documentation/blob/main/General-Projects/Kubernetes-app/Diagrams%26Flow/SystemFlow.md)
 
 ## 2. Component Sequence & Traffic Flow
 
