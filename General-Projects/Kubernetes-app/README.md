@@ -114,4 +114,88 @@ your-droplet   Ready    control-plane,master   1m    v1.x.x
 
 
 Once you reply with confirmation, we will move directly to **Phase 2: Installing Traefik**!
+
+```markdown
+# Phase 2: Traefik Ingress Controller Deployment
+
+## What is Traefik?
+
+Think of Traefik as the main receptionist or traffic cop at the front door of your cluster. When requests come from the internet (port 80 / 443), Traefik receives them and routes them to the correct internal application container.
+
+## Step 2.1: Install Helm (Kubernetes Package Manager)
+
+Helm is like `apt` or `npm`, but for Kubernetes. It allows us to install software like Traefik cleanly using single commands.
+
+Run this command on your server:
+
+```bash
+curl https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3 | bash
 ```
+
+Verify Helm installation:
+
+```bash
+helm version
+```
+
+## Step 2.2: Add the Traefik Repository
+
+Add Traefik's official chart repository to Helm and update your local chart index:
+
+```bash
+helm repo add traefik https://traefik.github.io/charts
+helm repo update
+```
+
+## Step 2.3: Create a Dedicated Namespace for Traefik
+
+Namespaces help keep cluster components organized and isolated.
+
+```bash
+kubectl create namespace traefik
+```
+
+## Step 2.4: Install Traefik using Helm
+
+Run this command to deploy Traefik into the `traefik` namespace:
+
+```bash
+helm install traefik traefik/traefik \
+  --namespace traefik \
+  --set ports.web.port=8000 \
+  --set ports.webgateway.port=80
+```
+
+## Step 2.5: Verify Traefik is Running
+
+Check the status of the Traefik Pod in its namespace:
+
+```bash
+kubectl get pods -n traefik
+```
+
+**Expected output:** You should see 1 pod with status `Running`:
+
+```
+NAME                       READY   STATUS    RESTARTS   AGE
+traefik-xxxxxxxxxx-xxxxx   1/1     Running   0          30s
+```
+
+Also check that the Traefik Service is bound to your server's ports:
+
+```bash
+kubectl get svc -n traefik
+```
+
+## Phase 2 Checkpoint
+
+Please run the commands above on your server and confirm:
+
+1. Did `helm version` work?
+2. Does `kubectl get pods -n traefik` show Traefik as `Running`?
+
+Once you confirm, we will move to **Phase 3: Setting up MongoDB with Persistent Storage**!
+```
+
+
+
