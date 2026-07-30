@@ -861,14 +861,33 @@ kubectl run -i --tty load-generator --rm --image=busybox:1.28 --restart=Never --
 2. **1 to 2 Minutes:** `REPLICAS` increases to handle load.
 3. **5 Minutes After Stopping Load:** `REPLICAS` automatically scales back down to 1.
 
+## 6. Zero-Downtime Restarts & Safe Configuration Updates
+
+You do not need to be scared to change settings while your application is live. Kubernetes handles updates and restarts safely:
+
+1. Zero-Downtime Restart (Kubernetes equivalent of docker restart)
+
+Unlike ``docker restart`` (which causes brief downtime by stopping your container), Kubernetes does a Rolling Restart:
+
+``kubectl rollout restart deployment/webapp``
+
+* How it works: It creates a brand-new Pod first. Only when the new Pod is 100% healthy and running does it shut down the old Pod. Your app never goes offline!
+
+2. Updating HPA Settings (webapp-hpa.yaml)
+
+Running ``kubectl apply -f webapp-hpa.yaml`` does NOT restart your application at all. It only updates the autoscaling rules in Kubernetes memory.
+
+3. Checking Restart Progress
+
+``kubectl rollout status deployment/webapp``
+
+
 ## Final Project Checkpoint & Summary
 
 Once you complete Phase 5, you have successfully built:
-
 - A production-ready K3s Kubernetes cluster on a 2GB DigitalOcean Droplet.
 - Traefik Ingress handling traffic routing.
-- MongoDB database with persistent volume disk backing (`mongo-pvc`).
+- MongoDB database with persistent volume disk backing (mongo-pvc).
 - Full-stack web application with automated Horizontal Pod Autoscaling (HPA).
 - Automatic SSL/TLS encryption via cert-manager & Let's Encrypt.
-```
 
