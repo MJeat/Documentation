@@ -33,25 +33,25 @@ Before setting up, here is the mini-project we will build together once Hermes i
 ## The Execution Roadmap
 
 * **Phase 1: VPS Provisioning & OS Hardening** *(Current Step)*
-* Create DigitalOcean Droplet.
-* Create `agentuser`, configure `sudo`, and disable `root` SSH.
-* Configure basic UFW firewall rules.
+  * Create DigitalOcean Droplet.
+  * Create `agentuser`, configure `sudo`, and disable `root` SSH.
+  * Configure basic UFW firewall rules.
 
 
 * **Phase 2: Docker Runtime & Hermes Agent Installation**
-* Install Docker Engine & Docker Compose.
-* Install Hermes Agent and link your preferred LLM API key.
-* Configure Hermes to route terminal tools into isolated Docker containers.
+  * Install Docker Engine & Docker Compose.
+  * Install Hermes Agent and link your preferred LLM API key.
+  * Configure Hermes to route terminal tools into isolated Docker containers.
 
 
 * **Phase 3: Executing the Blue Team Threat Scraper Project**
-* Prompt Hermes to execute the threat intelligence gathering task.
-* Monitor tool calls, sandbox boundary isolation, and error resolution live.
+  * Prompt Hermes to execute the threat intelligence gathering task.
+  * Monitor tool calls, sandbox boundary isolation, and error resolution live.
 
 
 * **Phase 4: Skill Synthesis & Learning Loop Audit**
-* Inspect the generated `SKILL.md` in `~/.hermes/skills/`.
-* Trigger a second execution pass to verify speed improvement and token reduction.
+  * Inspect the generated `SKILL.md` in `~/.hermes/skills/`.
+  * Trigger a second execution pass to verify speed improvement and token reduction.
 
 
 
@@ -87,7 +87,7 @@ rsync --archive --chown=agentuser:agentuser ~/.ssh /home/agentuser/
 # 4. Enable firewall allowing SSH only
 ufw allow OpenSSH
 ufw --force enable
-``` [Certain]
+```
 
 ### 3. Log In as `agentuser`
 Open a new terminal window on your local computer and verify SSH access:
