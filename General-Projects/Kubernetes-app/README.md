@@ -424,27 +424,109 @@ kubectl apply -f mongo-deployment.yaml
 
 ----
 
-# Phase 4: Web Application, Custom Images & Traefik Logging Setup
+# Phase 4: Full Deployment (Database + Web App + Ingress + HPA)
 
-In this phase, we will cover how to use custom images, deploy the web application to talk to MongoDB, expose it via Traefik on `kubernetes.app.portfoliomkc.tech`, configure auto-scaling, and inspect Traefik live access logs.
+In this phase, we will deploy MongoDB with persistent storage, deploy the web application, expose it via Traefik on `kubernetes.app.portfoliomkc.tech`, configure auto-scaling, and inspect live logs.
 
-## Quick YAML File Map (Which File Does What?)
+## Complete YAML File Map
 
-| YAML File Name          | What It Controls                                                                 | When to Edit                                      |
-|-------------------------|----------------------------------------------------------------------------------|---------------------------------------------------|
-| `mongo-pvc.yaml`        | Requests persistent disk space (5GB) for MongoDB.                                | Only if you need to increase database storage size. |
-| `mongo-deployment.yaml` | Runs the MongoDB container & internal service (`mongo-service:27017`).           | If changing database passwords or MongoDB version. |
-| `webapp-deployment.yaml`| Runs your application containers, environment vars (`MONGO_URI`), & CPU/RAM limits. | **Most Frequent:** Whenever changing your app image or environment variables. |
-| `webapp-ingress.yaml`   | Tells Traefik to direct domain traffic (`kubernetes.app.portfoliomkc.tech`) to your webapp. | If changing domain names, paths (`/api`), or SSL certificates. |
-| `webapp-hpa.yaml`       | Auto-scaling rules (scales webapp between 1 and 5 replicas based on CPU load).   | If adjusting CPU targets or max allowed replica count. |
+| YAML File Name          | What It Controls                                                                 | When to Edit / Purpose                                      |
+|-------------------------|----------------------------------------------------------------------------------|-------------------------------------------------------------|
+| `mongo-pvc.yaml`        | Requests persistent disk space (5GB) for MongoDB.                                | Defines database storage request.                           |
+| `mongo-deployment.yaml` | Runs MongoDB container & internal service (`mongo-service:27017`).               | Defines MongoDB credentials and database pod config.        |
+| `webapp-deployment.yaml`| Runs your app containers, environment vars (`MONGO_URI`), & CPU/RAM limits.      | **Most Frequent:** Whenever updating app image or env vars. |
+| `webapp-ingress.yaml`   | Directs domain traffic (`kubernetes.app.portfoliomkc.tech`) to your webapp.      | If changing domain names, paths (`/api`), or SSL certs.     |
+| `webapp-hpa.yaml`       | Auto-scaling rules (scales webapp between 1 and 5 replicas based on CPU).        | If adjusting CPU targets or max replica counts.             |
 
-## Step 4.1: How & Where to Change the Container Image
+## Step 4.1: Create & Apply MongoDB Storage (`mongo-pvc.yaml`)
 
-When configuring your deployment, the container image is specified on the `image:` line inside `webapp-deployment.yaml`.
+**File:** `mongo-pvc.yaml`
+
+```yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongo-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+```
+
+Apply the storage claim:
+
+```bash
+kubectl apply -f mongo-pvc.yaml
+```
+
+## Step 4.2: Create & Apply MongoDB Database (`mongo-deployment.yaml`)
+
+**File:** `mongo-deployment.yaml`
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongo-deployment
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongo
+  template:
+    metadata:
+      labels:
+        app: mongo
+    spec:
+      containers:
+      - name: mongo
+        image: mongo:6.0
+        ports:
+        - containerPort: 27017
+        env:
+        - name: MONGO_INITDB_ROOT_USERNAME
+          value: "admin"
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          value: "adminpassword123"
+        volumeMounts:
+        - name: mongo-storage
+          mountPath: /data/db
+      volumes:
+      - name: mongo-storage
+        persistentVolumeClaim:
+          claimName: mongo-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-service
+spec:
+  selector:
+    app: mongo
+  ports:
+  - port: 27017
+    targetPort: 27017
+```
+
+Apply the MongoDB deployment and service:
+
+```bash
+kubectl apply -f mongo-deployment.yaml
+```
+
+Verify MongoDB is running:
+
+```bash
+kubectl get pods -l app=mongo
+```
+
+## Step 4.3: How & Where to Change the Web App Container Image
+
+When configuring your web app, the container image is specified on the `image:` line inside `webapp-deployment.yaml`.
 
 ### Option A: Using a Specific Public Image (Docker Hub / Registry)
-
-Simply edit the `image:` field in `webapp-deployment.yaml`:
 
 ```yaml
 spec:
@@ -455,25 +537,23 @@ spec:
 
 ### Option B: Using a Custom Local Image (Built on Server without Docker Hub)
 
-If you built an image locally on your server using `docker build -t my-app:v1 .`:
+Import your built Docker image into K3s:
 
-1. Import the image into K3s's container runtime:
+```bash
+docker save my-app:v1 | sudo k3s ctr images import -
+```
 
-   ```bash
-   docker save my-app:v1 | sudo k3s ctr images import -
-   ```
+Specify `imagePullPolicy: Never` in `webapp-deployment.yaml`:
 
-2. In `webapp-deployment.yaml`, specify `imagePullPolicy: Never` so K3s uses the local copy:
+```yaml
+spec:
+  containers:
+  - name: webapp
+    image: my-app:v1
+    imagePullPolicy: Never   # <--- Tells K3s not to look on Docker Hub
+```
 
-   ```yaml
-   spec:
-     containers:
-     - name: webapp
-       image: my-app:v1
-       imagePullPolicy: Never   # <--- Tells K3s not to look on Docker Hub
-   ```
-
-## Step 4.2: Deploy the Web Application & Service
+## Step 4.4: Deploy the Web Application & Service (`webapp-deployment.yaml`)
 
 **File:** `webapp-deployment.yaml`
 
@@ -494,7 +574,7 @@ spec:
     spec:
       containers:
       - name: webapp
-        image: nginxdemos/hello:plain-text  # <--- CHANGE THIS IMAGE WHEN READY
+        image: nginxdemos/hello:plain-text  # <--- REPLACE WITH YOUR IMAGE WHEN READY
         ports:
         - containerPort: 80
         resources:
@@ -520,13 +600,13 @@ spec:
     targetPort: 80
 ```
 
-Apply the deployment:
+Apply the webapp deployment:
 
 ```bash
 kubectl apply -f webapp-deployment.yaml
 ```
 
-## Step 4.3: Expose the Application via Traefik Ingress
+## Step 4.5: Expose the Application via Traefik (`webapp-ingress.yaml`)
 
 **File:** `webapp-ingress.yaml`
 
@@ -557,7 +637,7 @@ Apply the Ingress rule:
 kubectl apply -f webapp-ingress.yaml
 ```
 
-## Step 4.4: Configure Horizontal Pod Autoscaler (HPA)
+## Step 4.6: Configure Horizontal Pod Autoscaler (`webapp-hpa.yaml`)
 
 **File:** `webapp-hpa.yaml`
 
@@ -588,45 +668,33 @@ Apply the HPA rule:
 kubectl apply -f webapp-hpa.yaml
 ```
 
-## Step 4.5: How to Inspect Traefik & App Logs
+## Step 4.7: How to Inspect Logs
 
-To view logs in Kubernetes, you stream them from the pods where the services run.
-
-### 1. View Live Traefik Ingress Logs (Like Nginx Access Logs)
-
-To stream real-time HTTP requests hitting Traefik in the `traefik` namespace:
-
-```bash
-kubectl logs -n traefik -l app.kubernetes.io/name=traefik -f
-```
-
-- `-n traefik`: Looks inside the Traefik namespace.
-- `-l app.kubernetes.io/name=traefik`: Selects the Traefik pod automatically.
-- `-f`: Follows/streams the logs continuously in real-time (press `Ctrl+C` to stop).
-
-### 2. View Application Logs (e.g. Python / Web App Output)
-
-To see standard output and error logs from your web app containers:
-
-```bash
-kubectl logs -f deployment/webapp
-```
-
-### 3. View MongoDB Database Logs
-
-To check database activity or connection errors:
+### 1. Stream MongoDB Logs
 
 ```bash
 kubectl logs -f deployment/mongo-deployment
 ```
 
+### 2. Stream Traefik Ingress Logs (HTTP Traffic)
+
+```bash
+kubectl logs -n traefik -l app.kubernetes.io/name=traefik -f
+```
+
+### 3. Stream Application Logs
+
+```bash
+kubectl logs -f deployment/webapp
+```
+
 ## Phase 4 Checkpoint
 
-Please execute the Phase 4 steps above and confirm:
+Please execute Steps 4.1 through 4.6 on your server. Then check:
 
-1. Are you able to stream Traefik logs using `kubectl logs -n traefik -l app.kubernetes.io/name=traefik -f`?
-2. Does `kubectl get hpa` show target CPU monitoring (`0%/50%`)?
-3. Does visiting `http://kubernetes.app.portfoliomkc.tech` display your application?
+1. Does `kubectl get pods` show both `mongo-deployment` and `webapp` as `Running`?
+2. Does `kubectl logs -f deployment/mongo-deployment` output database logs without errors?
+3. Does visiting `http://kubernetes.app.portfoliomkc.tech` load your application?
 
 Once verified, we will move to **Phase 5: Traffic Spike Load Testing & Auto-Scaling Verification**!
-
+```
