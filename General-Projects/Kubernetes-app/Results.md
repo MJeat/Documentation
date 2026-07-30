@@ -3,7 +3,7 @@
 <img width="562" height="270" alt="image" src="https://github.com/user-attachments/assets/f2524718-7691-43ef-97e5-6d3ac9b9e795" />
 
 
-# Testing Autoscaling
+# Testing Autoscaling (Traefik + Kubernetes)
 Using this command to stress the server to creating more traffic: 
 ```
 kubectl delete pod load-generator --ignore-not-found
