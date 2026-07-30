@@ -115,7 +115,7 @@ your-droplet   Ready    control-plane,master   1m    v1.x.x
 
 Once you reply with confirmation, we will move directly to **Phase 2: Installing Traefik**!
 
-```markdown
+
 # Phase 2: Traefik Ingress Controller Deployment
 
 ## What is Traefik?
@@ -195,7 +195,7 @@ Please run the commands above on your server and confirm:
 2. Does `kubectl get pods -n traefik` show Traefik as `Running`?
 
 Once you confirm, we will move to **Phase 3: Setting up MongoDB with Persistent Storage**!
-```
+
 
 
 
