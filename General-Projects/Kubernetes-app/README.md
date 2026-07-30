@@ -852,7 +852,9 @@ kubectl get hpa webapp-hpa --watch
 In Terminal 2, run a temporary load-generator Pod that floods your application with HTTP requests:
 
 ```bash
-kubectl run -i --tty load-generator --rm --image=busybox:1.28 --restart=Never -- /bin/sh -c "while true; do wget -q -O- http://webapp-service.default.svc.cluster.local; done"
+kubectl delete pod load-generator --ignore-not-found
+
+kubectl run -i --tty load-generator --rm --image=busybox:1.28 --restart=Never -- /bin/sh -c "for i in 1 2 3 4 5 6 7 8 9 10; do (while true; do wget -q -O- http://webapp-service.default.svc.cluster.local:5000 > /dev/null; done) & done; wait"
 ```
 
 ## Step 5.5: What You Will Observe During the Spike
