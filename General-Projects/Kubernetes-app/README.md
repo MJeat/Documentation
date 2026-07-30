@@ -192,8 +192,7 @@ kubectl get svc -n traefik
 ```
 
 ## Phase 2 Explain
-
-Here is the breakdown of exactly how this flow works, where that repository actually lives, and why Helm is still necessary if Kubernetes is doing the heavy lifting.
+> Here is the breakdown of exactly how this flow works, where that repository actually lives, and why Helm is still necessary if Kubernetes is doing the heavy lifting.
 ------------------------------
 ## Part 1: Explaining the Flow (Step-by-Step)
 
@@ -210,10 +209,11 @@ Here is the breakdown of exactly how this flow works, where that repository actu
 ## Part 2: Where is this repo that you "installed"?
 When you run helm repo add, nothing is installed inside your Kubernetes cluster yet, and nothing heavy is downloaded to your computer.
 
-* The Remote Repository: The actual blueprints sit on GitHub's servers (https://traefik.github.io/charts).
-* Your Local Machine: Helm simply saves a tiny text link and an index file in a hidden folder on your laptop/PC (usually inside ~/.config/helm/ or ~/.cache/helm/).
+* The Remote Repository: The actual blueprints sit on GitHub's servers (``https://traefik.github.io/charts``).
+* Your Local Machine: Helm simply saves a tiny text link and an index file in a hidden folder on your laptop/PC (usually inside ``~/.config/helm/`` or ``~/.cache/helm/``).
 
 It acts just like adding a bookmark to your web browser. You only download the actual blueprint files temporarily when you finally hit helm install.
+
 ------------------------------
 ## Part 3: Why use Helm if Kubernetes runs it?
 You are 100% correct that Kubernetes is the only one running the app. Helm doesn't run containers. However, you need Helm because Kubernetes is "dumb" about software packages—it only understands raw, individual pieces of infrastructure.
@@ -221,7 +221,7 @@ Without Helm, to install Traefik, you would have to:
 
    1. Go to Traefik's website and manually download 5 to 10 different raw YAML files (Deployments, Services, RBAC Roles, ServiceAccounts, IngressRoutes).
    2. Open those files and manually find and replace the ports to 8000 and 80 by hand.
-   3. Run kubectl apply -f file1.yaml, kubectl apply -f file2.yaml, etc.
+   3. Run ``kubectl apply -f file1.yaml``, ``kubectl apply -f file2.yaml``, etc.
    4. If you want to delete or upgrade it later, you have to remember exactly which 10 files you ran and manage them manually.
 
 Helm acts as the translator. You give Helm a single command with your custom ports, and Helm writes all 10 complex YAML files flawlessly in milliseconds and hands them to Kubernetes. Kubernetes runs them, but Helm did all the paperwork.
