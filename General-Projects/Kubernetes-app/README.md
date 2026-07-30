@@ -549,7 +549,7 @@ Specify `imagePullPolicy: Never` in `webapp-deployment.yaml`:
 spec:
   containers:
   - name: webapp
-    image: my-app:v1
+    image: my-app:v1         # Your local Docker image name
     imagePullPolicy: Never   # <--- Tells K3s not to look on Docker Hub
 ```
 
@@ -576,7 +576,7 @@ spec:
       - name: webapp
         image: nginxdemos/hello:plain-text  # <--- REPLACE WITH YOUR IMAGE WHEN READY
         ports:
-        - containerPort: 80
+        - containerPort: 80  # Change this port based on your app (Whatever port the app is using)
         resources:
           requests:
             cpu: "50m"       # 0.05 CPU core
@@ -596,8 +596,8 @@ spec:
   selector:
     app: webapp
   ports:
-  - port: 80
-    targetPort: 80
+  - port: 80  # Change this port based on your app (Whatever port the app is using)
+    targetPort: 80  # Change this port based on your app (Whatever port the app is using)
 ```
 
 Apply the webapp deployment:
@@ -628,7 +628,7 @@ spec:
           service:
             name: webapp-service
             port:
-              number: 80
+              number: 80  # Change this port based on your app (Whatever port the app is using)
 ```
 
 Apply the Ingress rule:
@@ -660,6 +660,9 @@ spec:
       target:
         type: Utilization
         averageUtilization: 50
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 60  # <--- Change scale-down delay (e.g. 60 seconds instead of 300)
 ```
 
 Apply the HPA rule:
@@ -782,7 +785,7 @@ spec:
           service:
             name: webapp-service
             port:
-              number: 80
+              number: 80  # Change this port based on your app (Whatever port the app is using)
 ```
 
 Apply the updated Ingress rule:
