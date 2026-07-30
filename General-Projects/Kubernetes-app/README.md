@@ -226,6 +226,65 @@ Without Helm, to install Traefik, you would have to:
 
 Helm acts as the translator. You give Helm a single command with your custom ports, and Helm writes all 10 complex YAML files flawlessly in milliseconds and hands them to Kubernetes. Kubernetes runs them, but Helm did all the paperwork.
 
+After you run helm install, Helm downloads the chart, processes it, and sends it to Kubernetes in three fast steps:
+## 1. What are the files?
+The downloaded chart is a folder containing:
+
+* ``values.yaml``: The settings file (e.g., your custom ports).
+* ``templates/`` folder: A collection of blank text blueprints for Kubernetes resources (Deployments, Services, ConfigMaps).
+
+## 2. What does Helm do with them?
+Helm acts as a compiler. It takes your custom settings from values.yaml and injects them directly into the blank template blueprints, generating completed, raw Kubernetes YAML files in milliseconds.
+## 3. How does it give them to Kubernetes?
+Helm makes a secure network call (an HTTP POST request) to the Kubernetes API Server. It directly transmits the completed YAML data over this connection. Kubernetes reads the data, stores it in its database (``etcd``), and immediately begins pulling the Docker images to spin up your containers.
+
+
+# Helm Inspection Commands
+
+## 1. View Raw YAML Before Sending (`helm template`)
+
+To inspect the final raw YAML configuration without sending any data to the Kubernetes cluster, use the `helm template` command. This acts as a compiler preview.
+
+```bash
+# Preview the generated YAML for the Traefik deployment
+helm template traefik traefik/traefik \
+  --set ports.web.port=8000 \
+  --set ports.webgateway.port=80
+```
+
+**What happens:** Helm locally injects your variables into the templates and prints the final, raw Kubernetes YAML files directly to your screen. Nothing is deployed.
+
+## 2. View YAML of a Live Deployment (`helm get manifest`)
+
+To see the exact YAML configurations Helm previously compiled and delivered to a running cluster, use the `helm get manifest` command.
+
+```bash
+# Retrieve the active YAML manifest for the 'traefik' release
+helm get manifest traefik --namespace traefik
+```
+
+**What happens:** Helm pulls the official blueprint layout currently running inside your cluster database and displays it.
+
+## 3. Track Active Releases (`helm list`)
+
+To see a comprehensive log of every blueprint pack you have ordered Helm to build, use the `helm list` command.
+
+```bash
+# List all active Helm releases inside the traefik namespace
+helm list --namespace traefik
+```
+
+**Expected Output:**
+
+```text
+NAME       NAMESPACE   REVISION   UPDATED                    STATUS     CHART           APP VERSION
+traefik    traefik     1          2026-07-30 15:10:00 UTC    deployed   traefik-33.0.0  v3.1.2     
+```
+
+**What happens:** This acts as your installation receipt tracker. It shows the deployment state (`deployed`), how many changes you have committed (`REVISION`), and the underlying engine versions.
+
+---
+
 
 
 
