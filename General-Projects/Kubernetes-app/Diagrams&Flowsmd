@@ -1,0 +1,63 @@
+# Kubernetes Architecture & Request Flow Diagram
+
+This document details the architecture and traffic flow for the web application deployed on K3s Kubernetes hosted on DigitalOcean, featuring automated TLS certificate issuance via Let's Encrypt, Traefik ingress routing, Horizontal Pod Autoscaling (HPA), and MongoDB database persistence.
+
+## 1. System Architecture Diagram (Mermaid)
+
+
+
+## 2. Component Sequence & Traffic Flow
+
+### Step-by-Step Execution Sequence
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor User as User Browser
+    participant DNS as Cloudflare DNS
+    participant Traefik as Traefik Ingress
+    participant CertMgr as Cert-Manager
+    participant AppSvc as webapp-service
+    participant WebPod as Web App Pod(s)
+    participant MongoSvc as mongo-service
+    participant MongoPod as MongoDB Pod
+    participant Disk as Local Disk (PVC)
+
+    Note over CertMgr, Traefik: Background SSL Setup
+    CertMgr->>Traefik: Request TLS Cert via Let's Encrypt
+    CertMgr-->>Traefik: Store Cert in 'webapp-tls-cert' Secret
+
+    Note over User, Disk: Active Client Traffic Flow
+    User->>DNS: Resolve kubernetes.app.portfoliomkc.tech
+    DNS-->>User: Returns Droplet IP (159.65.131.93)
+    User->>Traefik: GET https://kubernetes.app.portfoliomkc.tech (Port 443)
+    Note over Traefik: TLS Handshake & Termination using webapp-tls-cert
+    Traefik->>AppSvc: Route Request to ClusterIP:5000
+    AppSvc->>WebPod: Forward to available webapp Pod container
+    WebPod->>MongoSvc: Connect via mongo-service:27017 using mongo-secret
+    MongoSvc->>MongoPod: Route query to MongoDB container
+    MongoPod->>Disk: Read/Write persistent data on disk (/data/db)
+    Disk-->>MongoPod: Data returned
+    MongoPod-->>WebPod: DB Response returned
+    WebPod-->>Traefik: HTTP 200 Response
+    Traefik-->>User: Encrypted HTTPS Response to Client
+```
+
+## 3. Key Architecture Highlights
+
+### 1. HTTPS / TLS Termination at Ingress
+
+- Traefik directly offloads SSL using the certificate issued into `webapp-tls-cert` by cert-manager and `letsencrypt-prod`.
+- Internal traffic within the cluster routes over optimized HTTP/ClusterIP networks.
+
+### 2. Horizontal Pod Autoscaling (HPA)
+
+- `webapp-hpa` monitors target CPU usage (50% threshold).
+- When traffic load increases CPU demands, HPA scales `webapp` replicas dynamically up to 5 instances, distributing incoming traffic seamlessly through `webapp-service`.
+
+### 3. Database Security & Persistence
+
+- MongoDB runs inside an isolated Pod connected via internal service hostnames (`mongo-service:27017`).
+- Credentials are kept out of application code using Kubernetes Secrets (`mongo-secret`).
+- Disk state persists through a PersistentVolumeClaim backed by local node storage.
+```
