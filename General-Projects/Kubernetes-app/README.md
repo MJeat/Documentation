@@ -285,6 +285,144 @@ traefik    traefik     1          2026-07-30 15:10:00 UTC    deployed   traefik-
 
 ---
 
+# Phase 3: Database Setup (MongoDB & Persistent Storage)
+
+## Why Persistent Storage Matters
+
+By default, containers are ephemeral—meaning if a container restarts or crashes, any files written inside it are deleted. For a database like MongoDB, we need a **Persistent Volume Claim (PVC)**. This forces K3s to store database files directly on your server's host disk, ensuring your database data survives restarts.
+
+## Step 3.1: Create a Secret for Database Credentials
+
+Never write raw passwords directly inside application code or deployments. We store sensitive credentials securely in a Kubernetes Secret.
+
+Run this command to create a secret named `mongo-secret` with your admin username and password (replace `adminpassword123` with a password of your choice):
+
+```bash
+kubectl create secret generic mongo-secret \
+  --from-literal=mongo-root-username=admin \
+  --from-literal=mongo-root-password=adminpassword123
+```
+
+## Step 3.2: Create the Persistent Volume Claim (PVC)
+
+Create a file named `mongo-pvc.yaml` on your server:
+
+```bash
+nano mongo-pvc.yaml
+```
+
+Paste the following content into the file:
+
+```yaml
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  name: mongo-pvc
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 5Gi
+```
+
+Save and exit (`Ctrl+O`, Enter, `Ctrl+X`).
+
+Apply the PVC to your cluster:
+
+```bash
+kubectl apply -f mongo-pvc.yaml
+```
+
+## Step 3.3: Create the MongoDB Deployment & Internal Service
+
+Now we create both the MongoDB workload and an internal network Service so other applications inside the cluster can reach MongoDB via the address `mongo-service:27017`.
+
+Create a file named `mongo-deployment.yaml`:
+
+```bash
+nano mongo-deployment.yaml
+```
+
+Paste the following content:
+
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: mongodb
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: mongodb
+  template:
+    metadata:
+      labels:
+        app: mongodb
+    spec:
+      containers:
+      - name: mongodb
+        image: mongo:latest
+        ports:
+        - containerPort: 27017
+        env:
+        - name: MONGO_INITDB_ROOT_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: mongo-secret
+              key: mongo-root-username
+        - name: MONGO_INITDB_ROOT_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: mongo-secret
+              key: mongo-root-password
+        volumeMounts:
+        - name: mongo-storage
+          mountPath: /data/db
+      volumes:
+      - name: mongo-storage
+        persistentVolumeClaim:
+          claimName: mongo-pvc
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: mongo-service
+spec:
+  selector:
+    app: mongodb
+  ports:
+  - port: 27017
+    targetPort: 27017
+```
+
+Save and exit (`Ctrl+O`, Enter, `Ctrl+X`).
+
+Apply the MongoDB deployment and service:
+
+```bash
+kubectl apply -f mongo-deployment.yaml
+```
+
+## Step 3.4: Verify MongoDB and Volume Status
+
+1. Check if the Persistent Volume Claim is bound:
+
+   ```bash
+   kubectl get pvc
+   ```
+
+   **Expected output:** `mongo-pvc` status should show `Bound`.
+
+2. Check if MongoDB Pod is running:
+
+   ```bash
+   kubectl get pods
+   ```
+
+   **Expected output:** A pod named `mongodb-xxxxx-xxxxx` should show status `Running`.
+```
 
 
 
