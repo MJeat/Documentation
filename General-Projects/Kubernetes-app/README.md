@@ -420,10 +420,196 @@ kubectl apply -f mongo-deployment.yaml
    ```bash
    kubectl get pods
    ```
+**Expected output:** A pod named `mongodb-xxxxx-xxxxx` should show status `Running`.
 
-   **Expected output:** A pod named `mongodb-xxxxx-xxxxx` should show status `Running`.
+----
+
+# Phase 4: Web Application & Auto-Scaling (HPA) Setup
+
+Now that the database is running, we will deploy the web application, expose it via Traefik using `kubernetes.app.portfoliomkc.tech`, and set up Horizontal Pod Autoscaler (HPA).
+
+## Crucial Rule for Auto-Scaling
+
+For Kubernetes to scale containers based on CPU, every container must explicitly define **resource limits** (CPU/Memory bounds). Without this, the auto-scaler cannot compute usage percentages.
+
+## Step 4.1: Deploy the Web Application & Service
+
+Create `webapp-deployment.yaml`:
+
+```bash
+nano webapp-deployment.yaml
 ```
 
+Paste the following configuration:
 
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: webapp
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: webapp
+  template:
+    metadata:
+      labels:
+        app: webapp
+    spec:
+      containers:
+      - name: webapp
+        image: nginxdemos/hello:plain-text
+        ports:
+        - containerPort: 80
+        resources:
+          requests:
+            cpu: "50m"       # 0.05 CPU core
+            memory: "64Mi"
+          limits:
+            cpu: "100m"      # 0.1 CPU core max
+            memory: "128Mi"
+        env:
+        - name: MONGO_URI
+          value: "mongodb://admin:adminpassword123@mongo-service:27017"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: webapp-service
+spec:
+  selector:
+    app: webapp
+  ports:
+  - port: 80
+    targetPort: 80
+```
+
+Save and exit (`Ctrl+O`, Enter, `Ctrl+X`).
+
+Apply the web application deployment:
+
+```bash
+kubectl apply -f webapp-deployment.yaml
+```
+
+## Step 4.2: Expose the Application via Traefik Ingress
+
+Now we configure Traefik to route incoming web traffic for `kubernetes.app.portfoliomkc.tech` to `webapp-service`.
+
+Create `webapp-ingress.yaml`:
+
+```bash
+nano webapp-ingress.yaml
+```
+
+Paste the following configuration:
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: webapp-ingress
+  annotations:
+    kubernetes.io/ingress.class: traefik
+spec:
+  rules:
+  - host: "kubernetes.app.portfoliomkc.tech"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: webapp-service
+            port:
+              number: 80
+```
+
+Save and exit (`Ctrl+O`, Enter, `Ctrl+X`).
+
+Apply the Ingress rule:
+
+```bash
+kubectl apply -f webapp-ingress.yaml
+```
+
+## Step 4.3: Configure Horizontal Pod Autoscaler (HPA)
+
+We instruct Kubernetes: "Keep at least 1 replica running. If average CPU utilization exceeds 50%, spin up new replicas automatically, up to 5 maximum."
+
+Create `webapp-hpa.yaml`:
+
+```bash
+nano webapp-hpa.yaml
+```
+
+Paste the following:
+
+```yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: webapp-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: webapp
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
+```
+
+Save and exit (`Ctrl+O`, Enter, `Ctrl+X`).
+
+Apply the HPA rule:
+
+```bash
+kubectl apply -f webapp-hpa.yaml
+```
+
+## Step 4.4: Verify Web Application & HPA Status
+
+Check metrics collection:
+
+```bash
+kubectl top pods
+```
+
+Lists current CPU and memory utilization per pod.
+
+Check HPA status:
+
+```bash
+kubectl get hpa
+```
+
+Under `TARGETS`, you should see numeric percentage tracking like `0%/50%`.
+
+**Test Domain Access:**  
+Ensure your domain DNS A Record is pointing to your server IP, then test:
+
+```bash
+curl http://kubernetes.app.portfoliomkc.tech
+```
+
+Or open `http://kubernetes.app.portfoliomkc.tech` in your web browser.
+
+## Phase 4 Checkpoint
+
+Please execute the Phase 4 commands above and verify:
+
+1. Does `kubectl get hpa` show active target CPU monitoring (e.g., `0%/50%`)?
+2. Does visiting `http://kubernetes.app.portfoliomkc.tech` respond with the web app interface?
+
+Once confirmed, we will move to **Phase 5: Traffic Spike Load Testing & Auto-Scaling Verification** to simulate heavy traffic and watch Kubernetes auto-scale new containers!
+```
 
 
