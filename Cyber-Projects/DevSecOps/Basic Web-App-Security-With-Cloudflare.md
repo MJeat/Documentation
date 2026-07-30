@@ -10,9 +10,9 @@
 
 # Web App Interface with Zero Trust
 
-<img width="1081" height="666" alt="image" src="https://github.com/user-attachments/assets/39341eb9-1f27-4492-a69b-cb92329eb8ea" />
+<img width="1081" height="600" alt="image" src="https://github.com/user-attachments/assets/39341eb9-1f27-4492-a69b-cb92329eb8ea" />
 
-<img width="1058" height="881" alt="image" src="https://github.com/user-attachments/assets/0105a01d-eeec-4f9e-bf67-58cc81310107" />
+<img width="1058" height="681" alt="image" src="https://github.com/user-attachments/assets/0105a01d-eeec-4f9e-bf67-58cc81310107" />
 
 
 # CloudFlare Tunnel and Route
