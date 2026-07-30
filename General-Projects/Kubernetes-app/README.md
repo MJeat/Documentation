@@ -729,7 +729,7 @@ kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/
 
 ### 2. Create Let's Encrypt ClusterIssuer (`letsencrypt-issuer.yaml`)
 
-**File:** `letsencrypt-issuer.yaml`
+**File:** `nano letsencrypt-issuer.yaml`
 
 ```yaml
 apiVersion: cert-manager.io/v1
