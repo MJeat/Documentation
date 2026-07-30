@@ -673,7 +673,7 @@ kubectl apply -f webapp-hpa.yaml
 ### 1. Stream MongoDB Logs
 
 ```bash
-kubectl logs -f deployment/mongo-deployment
+kubectl logs -f deployment/mongodb
 ```
 
 ### 2. Stream Traefik Ingress Logs (HTTP Traffic)
