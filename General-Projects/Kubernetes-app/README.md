@@ -697,4 +697,149 @@ Please execute Steps 4.1 through 4.6 on your server. Then check:
 3. Does visiting `http://kubernetes.app.portfoliomkc.tech` load your application?
 
 Once verified, we will move to **Phase 5: Traffic Spike Load Testing & Auto-Scaling Verification**!
+
+---
+# Phase 5: Traffic Spike Load Testing, SSL & Final Verification
+
+In this final phase, we will issue automatic SSL certificates (HTTPS) for `kubernetes.app.portfoliomkc.tech`, simulate a massive traffic spike, and observe Kubernetes auto-scaling your containers in real time.
+
+## Step 5.1: Verify Current Cluster State
+
+Run this command to make sure all components are healthy before running the load test:
+
+```bash
+kubectl get pods,svc,ingress,hpa
 ```
+
+**Expected output:**
+
+- MongoDB Pod: `1/1 Running`
+- Webapp Pod: `1/1 Running`
+- `webapp-hpa`: TARGETS show `0%/50%` (or similar low CPU percentage)
+
+## Step 5.2: Setting Up Free HTTPS/SSL via Cert-Manager
+
+To secure your domain (`https://kubernetes.app.portfoliomkc.tech`) with Let's Encrypt:
+
+### 1. Install cert-manager into the cluster
+
+```bash
+kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/v1.13.1/cert-manager.yaml
+```
+
+### 2. Create Let's Encrypt ClusterIssuer (`letsencrypt-issuer.yaml`)
+
+**File:** `letsencrypt-issuer.yaml`
+
+```yaml
+apiVersion: cert-manager.io/v1
+kind: ClusterIssuer
+metadata:
+  name: letsencrypt-prod
+spec:
+  acme:
+    server: https://acme-v02.api.letsencrypt.org/directory
+    email: your-email@example.com   # <--- REPLACE WITH YOUR REAL EMAIL
+    privateKeySecretRef:
+      name: letsencrypt-prod
+    solvers:
+    - http01:
+        ingress:
+          class: traefik
+```
+
+Apply the issuer:
+
+```bash
+kubectl apply -f letsencrypt-issuer.yaml
+```
+
+### 3. Update `webapp-ingress.yaml` to request HTTPS certificate
+
+**File:** `webapp-ingress.yaml`
+
+```yaml
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: webapp-ingress
+  annotations:
+    kubernetes.io/ingress.class: traefik
+    cert-manager.io/cluster-issuer: letsencrypt-prod
+spec:
+  tls:
+  - hosts:
+    - kubernetes.app.portfoliomkc.tech
+    secretName: webapp-tls-cert
+  rules:
+  - host: "kubernetes.app.portfoliomkc.tech"
+    http:
+      paths:
+      - path: /
+        pathType: Prefix
+        backend:
+          service:
+            name: webapp-service
+            port:
+              number: 80
+```
+
+Apply the updated Ingress rule:
+
+```bash
+kubectl apply -f webapp-ingress.yaml
+```
+
+## Step 5.3: Terminal Setup for Traffic Spike Load Test
+
+Open **2 separate terminal windows** connected to your server so you can watch auto-scaling happen in real time.
+
+### Terminal 1: Live Monitor Window
+
+In Terminal 1, start watching your HPA and Pods live:
+
+```bash
+kubectl get hpa webapp-hpa --watch
+```
+
+(Leave this command running. It will update automatically as CPU usage and replica counts change.)
+
+### Terminal 2: Traffic Load Generator Window
+
+In Terminal 2, run a temporary load-generator Pod that floods your application with HTTP requests:
+
+```bash
+kubectl run -i --tty load-generator --rm --image=busybox:1.28 --restart=Never -- /bin/sh -c "while true; do wget -q -O- http://webapp-service.default.svc.cluster.local; done"
+```
+
+## Step 5.4: What You Will Observe During the Spike
+
+1. **0 to 1 Minute:** As the load-generator floods `webapp-service`, CPU load on your web app container will rise beyond the 50% target threshold.
+
+2. **1 to 2 Minutes:** In Terminal 1, you will see the `REPLICAS` column in `webapp-hpa` increase from 1 to 2, 3, or up to 5.
+
+3. **Verify Extra Containers:** Open a 3rd terminal tab and run:
+
+   ```bash
+   kubectl get pods -l app=webapp
+   ```
+
+   You will see multiple `webapp` containers running concurrently to split the incoming traffic load!
+
+## Step 5.5: Stop Load Test & Observe Auto-Cooldown
+
+1. In Terminal 2, press `Ctrl + C` to terminate the load-generator.
+2. Keep watching Terminal 1.
+3. After approximately 5 minutes (Kubernetes stabilization window to prevent rapid scale up/down thrashing), CPU usage will drop to 0% and Kubernetes will automatically terminate the extra containers, scaling back down to 1 replica to conserve server memory.
+
+## Final Project Checkpoint & Summary
+
+Once you complete Phase 5, you have successfully built:
+
+- A production-ready K3s Kubernetes cluster on a 2GB DigitalOcean Droplet.
+- Traefik Ingress handling traffic routing.
+- MongoDB database with persistent volume disk backing (`mongo-pvc`).
+- Full-stack web application with automated Horizontal Pod Autoscaling (HPA).
+- Automatic SSL/TLS encryption via cert-manager & Let's Encrypt.
+```
+
