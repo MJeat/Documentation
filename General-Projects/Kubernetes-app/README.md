@@ -699,9 +699,10 @@ Please execute Steps 4.1 through 4.6 on your server. Then check:
 Once verified, we will move to **Phase 5: Traffic Spike Load Testing & Auto-Scaling Verification**!
 
 ---
+
 # Phase 5: Traffic Spike Load Testing, SSL & Final Verification
 
-In this final phase, we will issue automatic SSL certificates (HTTPS) for `kubernetes.app.portfoliomkc.tech`, simulate a massive traffic spike, and observe Kubernetes auto-scaling your containers in real time.
+In this final phase, we issue automatic SSL certificates (HTTPS) for `kubernetes.app.portfoliomkc.tech`, simulate a massive traffic spike, and observe Kubernetes auto-scaling your containers in real time.
 
 ## Step 5.1: Verify Current Cluster State
 
@@ -729,7 +730,7 @@ kubectl apply -f https://github.com/cert-manager/cert-manager/releases/download/
 
 ### 2. Create Let's Encrypt ClusterIssuer (`letsencrypt-issuer.yaml`)
 
-**File:** `nano letsencrypt-issuer.yaml`
+**File:** `letsencrypt-issuer.yaml`
 
 ```yaml
 apiVersion: cert-manager.io/v1
@@ -790,7 +791,51 @@ Apply the updated Ingress rule:
 kubectl apply -f webapp-ingress.yaml
 ```
 
-## Step 5.3: Terminal Setup for Traffic Spike Load Test
+## Step 5.3: Understanding and Tuning the Scale-Down Cooldown Timer
+
+By default, Kubernetes enforces a **5-minute (300-second)** stabilization window before deleting extra Pods after traffic drops.
+
+### Where is this defined?
+
+1. **Default Kubernetes Controller Manager behavior:**  
+   Default setting is `--horizontal-pod-autoscaler-downscale-stabilization=5m0s`.
+
+2. **Explicit HPA Configuration (`webapp-hpa.yaml`):**  
+   You can customize or override this duration directly inside your `webapp-hpa.yaml` under `spec.behavior.scaleDown.stabilizationWindowSeconds`.
+
+### Custom HPA YAML with Cooldown Control (`webapp-hpa.yaml`)
+
+```yaml
+apiVersion: autoscaling/v2
+kind: HorizontalPodAutoscaler
+metadata:
+  name: webapp-hpa
+spec:
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: webapp
+  minReplicas: 1
+  maxReplicas: 5
+  metrics:
+  - type: Resource
+    resource:
+      name: cpu
+      target:
+        type: Utilization
+        averageUtilization: 50
+  behavior:
+    scaleDown:
+      stabilizationWindowSeconds: 60  # <--- Change scale-down delay (e.g. 60 seconds instead of 300)
+```
+
+To view your current live HPA settings directly in Kubernetes terminal:
+
+```bash
+kubectl get hpa webapp-hpa -o yaml
+```
+
+## Step 5.4: Terminal Setup for Traffic Spike Load Test
 
 Open **2 separate terminal windows** connected to your server so you can watch auto-scaling happen in real time.
 
@@ -802,8 +847,6 @@ In Terminal 1, start watching your HPA and Pods live:
 kubectl get hpa webapp-hpa --watch
 ```
 
-(Leave this command running. It will update automatically as CPU usage and replica counts change.)
-
 ### Terminal 2: Traffic Load Generator Window
 
 In Terminal 2, run a temporary load-generator Pod that floods your application with HTTP requests:
@@ -812,25 +855,11 @@ In Terminal 2, run a temporary load-generator Pod that floods your application w
 kubectl run -i --tty load-generator --rm --image=busybox:1.28 --restart=Never -- /bin/sh -c "while true; do wget -q -O- http://webapp-service.default.svc.cluster.local; done"
 ```
 
-## Step 5.4: What You Will Observe During the Spike
+## Step 5.5: What You Will Observe During the Spike
 
-1. **0 to 1 Minute:** As the load-generator floods `webapp-service`, CPU load on your web app container will rise beyond the 50% target threshold.
-
-2. **1 to 2 Minutes:** In Terminal 1, you will see the `REPLICAS` column in `webapp-hpa` increase from 1 to 2, 3, or up to 5.
-
-3. **Verify Extra Containers:** Open a 3rd terminal tab and run:
-
-   ```bash
-   kubectl get pods -l app=webapp
-   ```
-
-   You will see multiple `webapp` containers running concurrently to split the incoming traffic load!
-
-## Step 5.5: Stop Load Test & Observe Auto-Cooldown
-
-1. In Terminal 2, press `Ctrl + C` to terminate the load-generator.
-2. Keep watching Terminal 1.
-3. After approximately 5 minutes (Kubernetes stabilization window to prevent rapid scale up/down thrashing), CPU usage will drop to 0% and Kubernetes will automatically terminate the extra containers, scaling back down to 1 replica to conserve server memory.
+1. **0 to 1 Minute:** CPU load rises beyond 50%.
+2. **1 to 2 Minutes:** `REPLICAS` increases to handle load.
+3. **5 Minutes After Stopping Load:** `REPLICAS` automatically scales back down to 1.
 
 ## Final Project Checkpoint & Summary
 
