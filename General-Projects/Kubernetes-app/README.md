@@ -424,23 +424,58 @@ kubectl apply -f mongo-deployment.yaml
 
 ----
 
-# Phase 4: Web Application & Auto-Scaling (HPA) Setup
+# Phase 4: Web Application, Custom Images & Traefik Logging Setup
 
-Now that the database is running, we will deploy the web application, expose it via Traefik using `kubernetes.app.portfoliomkc.tech`, and set up Horizontal Pod Autoscaler (HPA).
+In this phase, we will cover how to use custom images, deploy the web application to talk to MongoDB, expose it via Traefik on `kubernetes.app.portfoliomkc.tech`, configure auto-scaling, and inspect Traefik live access logs.
 
-## Crucial Rule for Auto-Scaling
+## Quick YAML File Map (Which File Does What?)
 
-For Kubernetes to scale containers based on CPU, every container must explicitly define **resource limits** (CPU/Memory bounds). Without this, the auto-scaler cannot compute usage percentages.
+| YAML File Name          | What It Controls                                                                 | When to Edit                                      |
+|-------------------------|----------------------------------------------------------------------------------|---------------------------------------------------|
+| `mongo-pvc.yaml`        | Requests persistent disk space (5GB) for MongoDB.                                | Only if you need to increase database storage size. |
+| `mongo-deployment.yaml` | Runs the MongoDB container & internal service (`mongo-service:27017`).           | If changing database passwords or MongoDB version. |
+| `webapp-deployment.yaml`| Runs your application containers, environment vars (`MONGO_URI`), & CPU/RAM limits. | **Most Frequent:** Whenever changing your app image or environment variables. |
+| `webapp-ingress.yaml`   | Tells Traefik to direct domain traffic (`kubernetes.app.portfoliomkc.tech`) to your webapp. | If changing domain names, paths (`/api`), or SSL certificates. |
+| `webapp-hpa.yaml`       | Auto-scaling rules (scales webapp between 1 and 5 replicas based on CPU load).   | If adjusting CPU targets or max allowed replica count. |
 
-## Step 4.1: Deploy the Web Application & Service
+## Step 4.1: How & Where to Change the Container Image
 
-Create `webapp-deployment.yaml`:
+When configuring your deployment, the container image is specified on the `image:` line inside `webapp-deployment.yaml`.
 
-```bash
-nano webapp-deployment.yaml
+### Option A: Using a Specific Public Image (Docker Hub / Registry)
+
+Simply edit the `image:` field in `webapp-deployment.yaml`:
+
+```yaml
+spec:
+  containers:
+  - name: webapp
+    image: python:3.10-slim    # <--- Put any Docker Hub image here
 ```
 
-Paste the following configuration:
+### Option B: Using a Custom Local Image (Built on Server without Docker Hub)
+
+If you built an image locally on your server using `docker build -t my-app:v1 .`:
+
+1. Import the image into K3s's container runtime:
+
+   ```bash
+   docker save my-app:v1 | sudo k3s ctr images import -
+   ```
+
+2. In `webapp-deployment.yaml`, specify `imagePullPolicy: Never` so K3s uses the local copy:
+
+   ```yaml
+   spec:
+     containers:
+     - name: webapp
+       image: my-app:v1
+       imagePullPolicy: Never   # <--- Tells K3s not to look on Docker Hub
+   ```
+
+## Step 4.2: Deploy the Web Application & Service
+
+**File:** `webapp-deployment.yaml`
 
 ```yaml
 apiVersion: apps/v1
@@ -459,7 +494,7 @@ spec:
     spec:
       containers:
       - name: webapp
-        image: nginxdemos/hello:plain-text
+        image: nginxdemos/hello:plain-text  # <--- CHANGE THIS IMAGE WHEN READY
         ports:
         - containerPort: 80
         resources:
@@ -485,25 +520,15 @@ spec:
     targetPort: 80
 ```
 
-Save and exit (`Ctrl+O`, Enter, `Ctrl+X`).
-
-Apply the web application deployment:
+Apply the deployment:
 
 ```bash
 kubectl apply -f webapp-deployment.yaml
 ```
 
-## Step 4.2: Expose the Application via Traefik Ingress
+## Step 4.3: Expose the Application via Traefik Ingress
 
-Now we configure Traefik to route incoming web traffic for `kubernetes.app.portfoliomkc.tech` to `webapp-service`.
-
-Create `webapp-ingress.yaml`:
-
-```bash
-nano webapp-ingress.yaml
-```
-
-Paste the following configuration:
+**File:** `webapp-ingress.yaml`
 
 ```yaml
 apiVersion: networking.k8s.io/v1
@@ -526,25 +551,15 @@ spec:
               number: 80
 ```
 
-Save and exit (`Ctrl+O`, Enter, `Ctrl+X`).
-
 Apply the Ingress rule:
 
 ```bash
 kubectl apply -f webapp-ingress.yaml
 ```
 
-## Step 4.3: Configure Horizontal Pod Autoscaler (HPA)
+## Step 4.4: Configure Horizontal Pod Autoscaler (HPA)
 
-We instruct Kubernetes: "Keep at least 1 replica running. If average CPU utilization exceeds 50%, spin up new replicas automatically, up to 5 maximum."
-
-Create `webapp-hpa.yaml`:
-
-```bash
-nano webapp-hpa.yaml
-```
-
-Paste the following:
+**File:** `webapp-hpa.yaml`
 
 ```yaml
 apiVersion: autoscaling/v2
@@ -567,49 +582,51 @@ spec:
         averageUtilization: 50
 ```
 
-Save and exit (`Ctrl+O`, Enter, `Ctrl+X`).
-
 Apply the HPA rule:
 
 ```bash
 kubectl apply -f webapp-hpa.yaml
 ```
 
-## Step 4.4: Verify Web Application & HPA Status
+## Step 4.5: How to Inspect Traefik & App Logs
 
-Check metrics collection:
+To view logs in Kubernetes, you stream them from the pods where the services run.
 
-```bash
-kubectl top pods
-```
+### 1. View Live Traefik Ingress Logs (Like Nginx Access Logs)
 
-Lists current CPU and memory utilization per pod.
-
-Check HPA status:
+To stream real-time HTTP requests hitting Traefik in the `traefik` namespace:
 
 ```bash
-kubectl get hpa
+kubectl logs -n traefik -l app.kubernetes.io/name=traefik -f
 ```
 
-Under `TARGETS`, you should see numeric percentage tracking like `0%/50%`.
+- `-n traefik`: Looks inside the Traefik namespace.
+- `-l app.kubernetes.io/name=traefik`: Selects the Traefik pod automatically.
+- `-f`: Follows/streams the logs continuously in real-time (press `Ctrl+C` to stop).
 
-**Test Domain Access:**  
-Ensure your domain DNS A Record is pointing to your server IP, then test:
+### 2. View Application Logs (e.g. Python / Web App Output)
+
+To see standard output and error logs from your web app containers:
 
 ```bash
-curl http://kubernetes.app.portfoliomkc.tech
+kubectl logs -f deployment/webapp
 ```
 
-Or open `http://kubernetes.app.portfoliomkc.tech` in your web browser.
+### 3. View MongoDB Database Logs
+
+To check database activity or connection errors:
+
+```bash
+kubectl logs -f deployment/mongo-deployment
+```
 
 ## Phase 4 Checkpoint
 
-Please execute the Phase 4 commands above and verify:
+Please execute the Phase 4 steps above and confirm:
 
-1. Does `kubectl get hpa` show active target CPU monitoring (e.g., `0%/50%`)?
-2. Does visiting `http://kubernetes.app.portfoliomkc.tech` respond with the web app interface?
+1. Are you able to stream Traefik logs using `kubectl logs -n traefik -l app.kubernetes.io/name=traefik -f`?
+2. Does `kubectl get hpa` show target CPU monitoring (`0%/50%`)?
+3. Does visiting `http://kubernetes.app.portfoliomkc.tech` display your application?
 
-Once confirmed, we will move to **Phase 5: Traffic Spike Load Testing & Auto-Scaling Verification** to simulate heavy traffic and watch Kubernetes auto-scale new containers!
-```
-
+Once verified, we will move to **Phase 5: Traffic Spike Load Testing & Auto-Scaling Verification**!
 
