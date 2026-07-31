@@ -130,6 +130,43 @@ sudo systemctl status docker
 sudo systemctl start docker
 ```
 
+## Setting up dependencies
+
+```
+# Python
+sudo apt update && sudo apt install python3-pip -y
+
+# 1. Install Node.js & Hermes Browser Automation dependencies
+sudo apt install -y nodejs npm
+sudo npm install -g agent-browser
+agent-browser install --with-deps
+
+# 2. Save your Google AI Studio API key (replace YOUR_ACTUAL_GEMINI_KEY with your key)
+echo "GOOGLE_API_KEY=YOUR_ACTUAL_GEMINI_KEY" > ~/.hermes/.env
+```
+
+```
+# 3. Configure Gemini 2.5 Flash and Docker sandboxing
+cat << 'EOF' > ~/.hermes/config.yaml
+model:
+  default: gemini-2.5-flash
+  provider: gemini
+base_url: https://generativelanguage.googleapis.com/v1beta
+execution:
+  backend: docker
+EOF
+``` 
+
+---
+
+## Verify Phase 2 Completion
+
+Once those finish, run:
+```
+hermes doctor
+``` 
+
+**Does `hermes doctor` pass without errors?** If yes, confirm and we will immediately launch Phase 3: executing our autonomous Blue Team Threat Intel project [Certain].
 
 
 
