@@ -141,6 +141,13 @@ sudo apt install -y nodejs npm
 sudo npm install -g agent-browser
 agent-browser install --with-deps
 
+#  Install playwright globally
+sudo npm install -g playwright
+
+# 2. Install Chromium browser binaries and system dependencies
+sudo npx playwright install-deps chromium
+npx playwright install chromium
+
 # 2. Save your Google AI Studio API key (replace YOUR_ACTUAL_GEMINI_KEY with your key)
 echo "GOOGLE_API_KEY=YOUR_ACTUAL_GEMINI_KEY" > ~/.hermes/.env
 ```
